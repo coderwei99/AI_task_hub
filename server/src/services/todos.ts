@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import {
+  canConfirm,
   nextRequirementStatus,
   type CreateTodoInput,
   type Todo,
@@ -8,7 +9,7 @@ import {
 } from '@ai-task-hub/shared';
 import { db } from '../db';
 import { projects, todos } from '../db/schema';
-import { notFound } from '../lib/errors';
+import { conflict, notFound } from '../lib/errors';
 import { logActivity } from './activities';
 
 export function getTodoOrThrow(id: string): Todo {
@@ -77,6 +78,30 @@ export function patchTodo(id: string, input: UpdateTodoInput): Todo {
     }
 
     tx.update(todos).set(updates).where(eq(todos.id, id)).run();
+    return tx.select().from(todos).where(eq(todos.id, id)).get()!;
+  });
+}
+
+export function confirmTodo(id: string): Todo {
+  return db.transaction((tx) => {
+    const existing = tx.select().from(todos).where(eq(todos.id, id)).get();
+    if (!existing) throw notFound('Todo 不存在');
+    if (!canConfirm(existing.requirementStatus)) {
+      throw conflict('当前需求状态不可确认，请等待 AI 完成分析');
+    }
+    const now = Date.now();
+    const nextStatus = nextRequirementStatus(existing.requirementStatus, 'user_confirm');
+    tx.update(todos)
+      .set({ requirementStatus: nextStatus, confirmedAt: now, updatedAt: now })
+      .where(eq(todos.id, id))
+      .run();
+    logActivity(
+      id,
+      'requirement_status_changed',
+      { from: existing.requirementStatus, to: nextStatus, reason: 'user_confirm' },
+      tx,
+    );
+    logActivity(id, 'confirmed', {}, tx);
     return tx.select().from(todos).where(eq(todos.id, id)).get()!;
   });
 }

@@ -4,7 +4,7 @@ import { createTodoSchema, updateTodoSchema } from '@ai-task-hub/shared';
 import { db } from '../db';
 import { activities, messages, todos } from '../db/schema';
 import { parseBody } from '../lib/validate';
-import { createTodo, getTodoOrThrow, patchTodo } from '../services/todos';
+import { confirmTodo, createTodo, getTodoOrThrow, patchTodo } from '../services/todos';
 
 export const projectTodoRoutes = new Hono();
 
@@ -32,6 +32,8 @@ todoRoutes.patch('/:id', async (c) => {
   const input = await parseBody(c, updateTodoSchema);
   return c.json(patchTodo(c.req.param('id'), input));
 });
+
+todoRoutes.post('/:id/confirm', (c) => c.json(confirmTodo(c.req.param('id'))));
 
 todoRoutes.delete('/:id', (c) => {
   const id = c.req.param('id');
