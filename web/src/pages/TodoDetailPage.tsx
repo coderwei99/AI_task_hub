@@ -13,6 +13,7 @@ import {
   type Priority,
 } from '@ai-task-hub/shared';
 import { useActivities, useConfirmTodo, useDeleteTodo, useProject, useTodo, useUpdateTodo } from '@/api/hooks';
+import { ApiClientError } from '@/api/client';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
 import { ChatPanel } from '@/components/ChatPanel';
 import { Markdown } from '@/components/Markdown';
@@ -51,7 +52,7 @@ import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
 export default function TodoDetailPage() {
   const { projectId = '', todoId = '' } = useParams();
   const navigate = useNavigate();
-  const { data: todo, isLoading, error } = useTodo(todoId);
+  const { data: todo, isPending, error, refetch } = useTodo(todoId);
   const { data: project } = useProject(projectId);
   const { data: activities } = useActivities(todoId);
   const updateTodo = useUpdateTodo();
@@ -104,18 +105,26 @@ export default function TodoDetailPage() {
     }
   }
 
-  if (isLoading) {
+  if (isPending) {
     return <div className="p-6 text-sm text-muted-foreground">加载中…</div>;
   }
   if (error || !todo) {
+    const isNotFound = error instanceof ApiClientError && error.status === 404;
     return (
       <div className="flex flex-col items-center gap-3 p-20 text-center">
-        <p className="text-muted-foreground">Todo 不存在或已被删除</p>
-        <Button variant="outline" asChild>
-          <Link to={`/projects/${projectId}`}>
-            <ArrowLeft /> 返回看板
-          </Link>
-        </Button>
+        <p className="text-muted-foreground">{isNotFound ? 'Todo 不存在或已被删除' : 'Todo 加载失败'}</p>
+        <div className="flex items-center gap-2">
+          {!isNotFound && (
+            <Button variant="outline" onClick={() => refetch()}>
+              重试
+            </Button>
+          )}
+          <Button variant="outline" asChild>
+            <Link to={`/projects/${projectId}`}>
+              <ArrowLeft /> 返回看板
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }

@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router';
 import { formatTodoNumber } from '@ai-task-hub/shared';
 import { useTasks } from '@/api/hooks';
+import { PageError } from '@/components/PageError';
 import { ExecutionBadge, PriorityBadge, RequirementBadge } from '@/components/badges';
 import { relativeTime } from '@/lib/format';
 
 export default function AllTasksPage() {
   const navigate = useNavigate();
-  const { data: tasks, isLoading } = useTasks();
+  const { data: tasks, isPending, error, refetch } = useTasks();
 
   const all = tasks ?? [];
   const pendingCount = all.filter((t) => t.requirementStatus === 'pending').length;
@@ -24,8 +25,10 @@ export default function AllTasksPage() {
         <span className="rounded-full bg-muted px-3 py-1">已确认 {confirmedCount}</span>
       </div>
 
-      {isLoading ? (
+      {isPending ? (
         <p className="text-sm text-muted-foreground">加载中…</p>
+      ) : error ? (
+        <PageError message="任务加载失败" onRetry={() => refetch()} />
       ) : all.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-20 text-center text-muted-foreground">
           <p>还没有任务</p>

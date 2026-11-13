@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import type { ProjectWithStats } from '@ai-task-hub/shared';
 import { useDeleteProject, useProjects } from '@/api/hooks';
+import { PageError } from '@/components/PageError';
 import { ProjectFormDialog } from '@/components/ProjectFormDialog';
 import {
   AlertDialog,
@@ -27,7 +28,7 @@ import { relativeTime } from '@/lib/format';
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
-  const { data: projects, isLoading } = useProjects();
+  const { data: projects, isPending, error, refetch } = useProjects();
   const deleteProject = useDeleteProject();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ProjectWithStats | null>(null);
@@ -61,8 +62,10 @@ export default function ProjectsPage() {
         </Button>
       </div>
 
-      {isLoading ? (
+      {isPending ? (
         <p className="text-sm text-muted-foreground">加载中…</p>
+      ) : error ? (
+        <PageError message="项目加载失败" onRetry={() => refetch()} />
       ) : !projects?.length ? (
         <div className="flex flex-col items-center gap-3 py-20 text-center">
           <p className="text-muted-foreground">还没有项目</p>

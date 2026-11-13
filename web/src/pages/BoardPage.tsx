@@ -9,6 +9,7 @@ import {
   type Todo,
 } from '@ai-task-hub/shared';
 import { useProject, useTodos, useMoveTodo } from '@/api/hooks';
+import { ApiClientError } from '@/api/client';
 import { BoardColumns } from '@/components/BoardColumns';
 import { ProjectFormDialog } from '@/components/ProjectFormDialog';
 import { TodoFormDialog } from '@/components/TodoFormDialog';
@@ -26,7 +27,7 @@ const SHOW_DONE_KEY = 'ath.board.showDone';
 export default function BoardPage() {
   const { projectId = '' } = useParams();
   const navigate = useNavigate();
-  const { data: project, isLoading, error } = useProject(projectId);
+  const { data: project, isPending, error, refetch } = useProject(projectId);
   const { data: todos } = useTodos(projectId);
   const moveTodo = useMoveTodo(projectId);
   const { copy, isPending: copyPending } = useCopyMarkdown();
@@ -48,18 +49,26 @@ export default function BoardPage() {
     localStorage.setItem(SHOW_DONE_KEY, v ? '1' : '0');
   }
 
-  if (isLoading) {
+  if (isPending) {
     return <div className="p-6 text-sm text-muted-foreground">加载中…</div>;
   }
   if (error || !project) {
+    const isNotFound = error instanceof ApiClientError && error.status === 404;
     return (
       <div className="flex flex-col items-center gap-3 p-20 text-center">
-        <p className="text-muted-foreground">项目不存在或已被删除</p>
-        <Button variant="outline" asChild>
-          <Link to="/projects">
-            <ArrowLeft /> 返回项目列表
-          </Link>
-        </Button>
+        <p className="text-muted-foreground">{isNotFound ? '项目不存在或已被删除' : '项目加载失败'}</p>
+        <div className="flex items-center gap-2">
+          {!isNotFound && (
+            <Button variant="outline" onClick={() => refetch()}>
+              重试
+            </Button>
+          )}
+          <Button variant="outline" asChild>
+            <Link to="/projects">
+              <ArrowLeft /> 返回项目列表
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -137,12 +146,21 @@ export default function BoardPage() {
         </div>
       </div>
 
-      <BoardColumns
-        view={view}
-        columns={columns}
-        onCardClick={(todo) => navigate(`/projects/${projectId}/todos/${todo.id}`)}
-        onMove={(todoId, target) => moveTodo.mutate({ id: todoId, executionStatus: target })}
-      />
+      {all.length === 0 ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+          <p className="text-muted-foreground">还没有 Todo</p>
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus /> 新建第一个 Todo
+          </Button>
+        </div>
+      ) : (
+        <BoardColumns
+          view={view}
+          columns={columns}
+          onCardClick={(todo) => navigate(`/projects/${projectId}/todos/${todo.id}`)}
+          onMove={(todoId, target) => moveTodo.mutate({ id: todoId, executionStatus: target })}
+        />
+      )}
 
       <TodoFormDialog
         projectId={projectId}
