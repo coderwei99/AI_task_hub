@@ -99,6 +99,15 @@ export interface AiSettings {
   model: string;
 }
 
+export interface ChatDoneEvent {
+  assistantMessageId: string;
+  sufficient: boolean | null;
+  requirementStatus: RequirementStatus;
+  docUpdated: boolean;
+  docRecovered: boolean;
+  parseWarning: boolean;
+}
+
 export interface TaskWithProject extends Todo {
   project: { id: string; name: string; icon: string } | null;
 }
