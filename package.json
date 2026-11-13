@@ -1,0 +1,16 @@
+{
+  "name": "ai-task-hub",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm --filter @ai-task-hub/web build",
+    "start": "pnpm --filter @ai-task-hub/server start",
+    "typecheck": "pnpm -r run typecheck",
+    "db:generate": "pnpm --filter @ai-task-hub/server db:generate"
+  }
+}
