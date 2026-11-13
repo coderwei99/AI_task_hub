@@ -14,6 +14,7 @@ import {
 } from '@ai-task-hub/shared';
 import { useActivities, useDeleteTodo, useProject, useTodo, useUpdateTodo } from '@/api/hooks';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
+import { ChatPanel } from '@/components/ChatPanel';
 import { Markdown } from '@/components/Markdown';
 import { RequirementBadge } from '@/components/badges';
 import {
@@ -76,6 +77,9 @@ export default function TodoDetailPage() {
       toast.error(e instanceof Error ? e.message : '删除失败');
     }
   }
+  function handleConfirm() {
+    toast.info('确认需求将在 M2-7 实现');
+  }
 
   if (isLoading) {
     return <div className="p-6 text-sm text-muted-foreground">加载中…</div>;
@@ -114,7 +118,7 @@ export default function TodoDetailPage() {
             <Button
               disabled={!confirmable}
               title={confirmable ? '确认需求' : 'AI 完成分析后可确认'}
-              onClick={() => toast.info('确认需求将在 M2 实现')}
+              onClick={handleConfirm}
             >
               <Check /> 确认需求
             </Button>
@@ -197,19 +201,7 @@ export default function TodoDetailPage() {
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <div className="flex w-[55%] min-w-0 flex-col border-r">
-          <div className="border-b px-4 py-2 text-sm font-medium">AI 对话</div>
-          <div className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center text-sm text-muted-foreground">
-            <p>AI 需求打磨对话将在 M2 实现。</p>
-            <p className="text-xs">届时可在此与 AI 多轮澄清需求，右侧实时生成需求文档。</p>
-          </div>
-          <div className="border-t p-3">
-            <div className="flex gap-2">
-              <Input disabled placeholder="继续补充需求或回答 AI 的问题…" />
-              <Button disabled>发送</Button>
-            </div>
-          </div>
-        </div>
+        <ChatPanel todo={todo} onConfirm={handleConfirm} />
 
         <div className="flex w-[45%] min-w-0 flex-col">
           <Tabs defaultValue="doc" className="flex min-h-0 flex-1 flex-col gap-0">
