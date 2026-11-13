@@ -102,7 +102,7 @@ export function BoardColumns({ view, columns, onCardClick, onMove }: Props) {
 
   if (view === 'requirement') {
     return (
-      <div className="grid flex-1 grid-cols-5 gap-3 overflow-hidden">
+      <div className="grid flex-1 grid-flow-col gap-3 overflow-x-auto auto-cols-[minmax(12rem,1fr)] md:auto-cols-[minmax(0,1fr)] md:overflow-hidden">
         {columns.map((col) => (
           <ColumnShell key={col.key} label={col.label} count={col.items.length}>
             {col.items.map((todo) => (
@@ -126,7 +126,7 @@ export function BoardColumns({ view, columns, onCardClick, onMove }: Props) {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} autoScroll={false} onDragEnd={handleDragEnd}>
-      <div className="grid flex-1 grid-cols-5 gap-3 overflow-hidden">
+      <div className="grid flex-1 grid-flow-col gap-3 overflow-x-auto auto-cols-[minmax(12rem,1fr)] md:auto-cols-[minmax(0,1fr)] md:overflow-hidden">
         {columns.map((col) => (
           <DroppableColumn key={col.key} column={col} onCardClick={onCardClick} />
         ))}
