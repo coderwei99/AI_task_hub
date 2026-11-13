@@ -3,13 +3,14 @@ import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { aiSettingsSchema } from '@ai-task-hub/shared';
 import { useSettings, useTestConnection, useUpdateSettings, type TestConnectionResult } from '@/api/hooks';
+import { PageError } from '@/components/PageError';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function SettingsPage() {
-  const { data: settings, isLoading } = useSettings();
+  const { data: settings, isPending, error: loadError, refetch } = useSettings();
   const updateSettings = useUpdateSettings();
   const testConnection = useTestConnection();
 
@@ -70,8 +71,10 @@ export default function SettingsPage() {
           兼容 OpenAI Chat Completions 接口。需求内容会发送到你配置的 AI 服务，请使用你信任的服务商。
         </p>
 
-        {isLoading ? (
+        {isPending ? (
           <p className="mt-4 text-sm text-muted-foreground">加载中…</p>
+        ) : loadError ? (
+          <PageError message="配置加载失败" onRetry={() => refetch()} />
         ) : (
           <div className="mt-4 space-y-4">
             <div className="space-y-2">
