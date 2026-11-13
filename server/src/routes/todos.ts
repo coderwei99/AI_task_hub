@@ -4,6 +4,7 @@ import { createTodoSchema, updateTodoSchema } from '@ai-task-hub/shared';
 import { db } from '../db';
 import { activities, messages, todos } from '../db/schema';
 import { parseBody } from '../lib/validate';
+import { exportTodoMarkdown } from '../services/export';
 import { confirmTodo, createTodo, getTodoOrThrow, patchTodo } from '../services/todos';
 
 export const projectTodoRoutes = new Hono();
@@ -34,6 +35,10 @@ todoRoutes.patch('/:id', async (c) => {
 });
 
 todoRoutes.post('/:id/confirm', (c) => c.json(confirmTodo(c.req.param('id'))));
+
+todoRoutes.get('/:id/export', (c) =>
+  c.text(exportTodoMarkdown(c.req.param('id')), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }),
+);
 
 todoRoutes.delete('/:id', (c) => {
   const id = c.req.param('id');

@@ -11,6 +11,7 @@ import { db } from '../db';
 import { projects, todos } from '../db/schema';
 import { notFound } from '../lib/errors';
 import { parseBody } from '../lib/validate';
+import { exportProjectMarkdown } from '../services/export';
 
 export const projectRoutes = new Hono();
 
@@ -46,6 +47,10 @@ projectRoutes.get('/:id', (c) => {
   if (!project) throw notFound('项目不存在');
   return c.json({ ...project, stats: statsFor(project.id) });
 });
+
+projectRoutes.get('/:id/export', (c) =>
+  c.text(exportProjectMarkdown(c.req.param('id')), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }),
+);
 
 projectRoutes.patch('/:id', async (c) => {
   const id = c.req.param('id');
