@@ -97,9 +97,9 @@ export default function BoardPage() {
   }
 
   return (
-    <div className="flex h-full flex-col p-6">
+    <div className="flex h-full flex-col p-4 md:p-6">
       <div className="mb-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-2xl">{project.icon}</span>
@@ -130,7 +130,7 @@ export default function BoardPage() {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between gap-4">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
           <Tabs value={view} onValueChange={changeView}>
             <TabsList>
               <TabsTrigger value="requirement">需求状态</TabsTrigger>
