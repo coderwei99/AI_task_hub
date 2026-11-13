@@ -12,7 +12,8 @@ import { nanoid } from 'nanoid';
 import type { RequirementStatus } from '@ai-task-hub/shared';
 import { db, runMigrations } from '../db';
 import { activities, projects, todos } from '../db/schema';
-import { patchTodo } from './todos';
+import { ApiError } from '../lib/errors';
+import { confirmTodo, patchTodo } from './todos';
 
 beforeAll(() => {
   runMigrations();
@@ -96,5 +97,53 @@ describe('patchTodo 文档编辑副作用', () => {
     patchTodo(id, { requirementDoc: '# 文档' });
     const after = actsOf(id).filter((a) => a.type === 'doc_updated').length;
     expect(after).toBe(before);
+  });
+});
+
+describe('confirmTodo 确认门控', () => {
+  it('ai_ready 确认 → confirmed，写 confirmedAt 与 confirmed/user_confirm 活动', () => {
+    const id = seedTodo('ai_ready', '# 文档');
+    const before = Date.now();
+    const result = confirmTodo(id);
+
+    expect(result.requirementStatus).toBe('confirmed');
+    expect(result.confirmedAt).toBeGreaterThanOrEqual(before);
+    const acts = actsOf(id);
+    expect(acts.some((a) => a.type === 'confirmed')).toBe(true);
+    const transition = acts.find(
+      (a) => a.type === 'requirement_status_changed' && payloadOf(a).reason === 'user_confirm',
+    );
+    expect(payloadOf(transition!)).toMatchObject({ from: 'ai_ready', to: 'confirmed', reason: 'user_confirm' });
+  });
+
+  it('reconfirm 确认 → confirmed', () => {
+    const id = seedTodo('reconfirm', '# 文档');
+    expect(confirmTodo(id).requirementStatus).toBe('confirmed');
+  });
+
+  it('pending/polishing/confirmed 确认 → 409，状态不变', () => {
+    for (const status of ['pending', 'polishing', 'confirmed'] as RequirementStatus[]) {
+      const id = seedTodo(status, '# 文档');
+      let err: unknown;
+      try {
+        confirmTodo(id);
+      } catch (e) {
+        err = e;
+      }
+      expect(err).toBeInstanceOf(ApiError);
+      expect((err as ApiError).status).toBe(409);
+      expect(todoOf(id).requirementStatus).toBe(status);
+    }
+  });
+
+  it('不存在的 Todo 确认 → 404', () => {
+    let err: unknown;
+    try {
+      confirmTodo('missing-id');
+    } catch (e) {
+      err = e;
+    }
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(404);
   });
 });
