@@ -12,9 +12,10 @@ import {
   type ExecutionStatus,
   type Priority,
 } from '@ai-task-hub/shared';
-import { useActivities, useDeleteTodo, useProject, useTodo, useUpdateTodo } from '@/api/hooks';
+import { useActivities, useConfirmTodo, useDeleteTodo, useProject, useTodo, useUpdateTodo } from '@/api/hooks';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
 import { ChatPanel } from '@/components/ChatPanel';
+import { Markdown } from '@/components/Markdown';
 import { RequirementDocPanel } from '@/components/RequirementDocPanel';
 import { RequirementBadge } from '@/components/badges';
 import {
@@ -28,6 +29,14 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,10 +55,12 @@ export default function TodoDetailPage() {
   const { data: activities } = useActivities(todoId);
   const updateTodo = useUpdateTodo();
   const deleteTodo = useDeleteTodo();
+  const confirmTodo = useConfirmTodo();
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   function startEditTitle() {
     if (!todo) return;
@@ -78,7 +89,17 @@ export default function TodoDetailPage() {
     }
   }
   function handleConfirm() {
-    toast.info('确认需求将在 M2-7 实现');
+    setConfirmOpen(true);
+  }
+  async function doConfirm() {
+    if (!todo) return;
+    try {
+      await confirmTodo.mutateAsync(todo.id);
+      setConfirmOpen(false);
+      toast.success('需求已确认');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : '确认失败');
+    }
   }
 
   if (isLoading) {
@@ -235,6 +256,32 @@ export default function TodoDetailPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>确认需求</DialogTitle>
+            <DialogDescription>
+              确认后「{todo.title}」将标记为已确认，可 Copy 交给 Coding Agent。请核对以下需求文档摘要。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-60 overflow-y-auto rounded-md border bg-muted/30 p-3">
+            {todo.requirementDoc ? (
+              <Markdown content={todo.requirementDoc} className="text-sm" />
+            ) : (
+              <p className="text-sm text-muted-foreground">暂无文档内容</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              取消
+            </Button>
+            <Button onClick={doConfirm} disabled={confirmTodo.isPending}>
+              <Check /> 确认
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

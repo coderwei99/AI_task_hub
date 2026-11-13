@@ -127,6 +127,14 @@ export function useDeleteTodo() {
   });
 }
 
+export function useConfirmTodo() {
+  const invalidate = useInvalidateTodoRelated();
+  return useMutation({
+    mutationFn: (id: string) => api.post<Todo>(`/todos/${id}/confirm`),
+    onSuccess: invalidate,
+  });
+}
+
 export function useMoveTodo(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
