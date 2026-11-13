@@ -117,6 +117,14 @@ describe('renderTodoMarkdown', () => {
     expect(md).toContain(freeform);
     expect(md).not.toContain('## 需求背景');
   });
+
+  it('非标准节单独保留，不污染尚未解决的问题（仍按暂无省略）', () => {
+    const doc = `${SEVEN_SECTION_DOC}\n\n## 修订\n确认后小幅修改。`;
+    const md = renderTodoMarkdown(makeTodo({ requirementDoc: doc }), makeProject(), EXPORTED_AT);
+    expect(md).not.toContain('## 尚未解决的问题');
+    expect(md).toContain('## 修订');
+    expect(md).toContain('确认后小幅修改。');
+  });
 });
 
 describe('renderProjectMarkdown', () => {
@@ -178,5 +186,11 @@ describe('parseRequirementSections', () => {
     const { sections } = parseRequirementSections(doc);
     expect(sections['需求背景']).toBe('- 需求背景：这是正文不是标题');
     expect(sections['需求目标']).toBe('略');
+  });
+
+  it('非标准标题进入 extras，不并入上一节', () => {
+    const { sections, extras } = parseRequirementSections('## 尚未解决的问题\n暂无\n\n## 修订\n改动');
+    expect(sections['尚未解决的问题']).toBe('暂无');
+    expect(extras).toEqual([{ heading: '## 修订', content: '改动' }]);
   });
 });
