@@ -108,6 +108,10 @@ export interface ChatDoneEvent {
   parseWarning: boolean;
 }
 
+export const DOC_DELIMITER = '===REQUIREMENT_DOC===';
+export const SUFFICIENT_YES = '===SUFFICIENT: YES===';
+export const SUFFICIENT_NO = '===SUFFICIENT: NO===';
+
 export interface TaskWithProject extends Todo {
   project: { id: string; name: string; icon: string } | null;
 }
