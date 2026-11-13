@@ -14,6 +14,10 @@ const queryClient = new QueryClient({
       toast.error(message, { id: message });
     },
   }),
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false, networkMode: 'always' },
+    mutations: { networkMode: 'always' },
+  },
 });
 
 createRoot(document.getElementById('root')!).render(
