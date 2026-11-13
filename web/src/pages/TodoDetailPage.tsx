@@ -15,7 +15,7 @@ import {
 import { useActivities, useDeleteTodo, useProject, useTodo, useUpdateTodo } from '@/api/hooks';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
 import { ChatPanel } from '@/components/ChatPanel';
-import { Markdown } from '@/components/Markdown';
+import { RequirementDocPanel } from '@/components/RequirementDocPanel';
 import { RequirementBadge } from '@/components/badges';
 import {
   AlertDialog,
@@ -211,14 +211,8 @@ export default function TodoDetailPage() {
                 <TabsTrigger value="activity">活动记录</TabsTrigger>
               </TabsList>
             </div>
-            <TabsContent value="doc" className="min-h-0 flex-1 overflow-y-auto p-4">
-              {todo.requirementDoc ? (
-                <Markdown content={todo.requirementDoc} />
-              ) : (
-                <p className="py-10 text-center text-sm text-muted-foreground">
-                  暂无需求文档，AI 打磨后自动生成。
-                </p>
-              )}
+            <TabsContent value="doc" className="flex min-h-0 flex-1 flex-col">
+              <RequirementDocPanel todo={todo} activities={activities ?? []} />
             </TabsContent>
             <TabsContent value="activity" className="min-h-0 flex-1 overflow-y-auto p-4">
               <ActivityTimeline activities={activities ?? []} />
