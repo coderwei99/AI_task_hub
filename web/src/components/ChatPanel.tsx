@@ -107,7 +107,7 @@ export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
   const bannerStatus: RequirementStatus = streaming ? 'polishing' : todo.requirementStatus;
 
   return (
-    <div className="flex w-[55%] min-w-0 flex-col border-r">
+    <div className="flex w-full min-w-0 flex-col md:w-[55%] md:border-r">
       <div className="border-b px-4 py-2 text-sm font-medium">AI 对话</div>
 
       <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
