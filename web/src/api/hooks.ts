@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import type {
   Activity,
   AiSettings,
@@ -148,8 +149,9 @@ export function useMoveTodo(projectId: string) {
       );
       return { prev };
     },
-    onError: (_e, _vars, ctx) => {
+    onError: (e, _vars, ctx) => {
       if (ctx?.prev) qc.setQueryData(queryKeys.todos(projectId), ctx.prev);
+      toast.error(e instanceof Error ? e.message : '移动失败，已回滚');
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.todos(projectId) });
