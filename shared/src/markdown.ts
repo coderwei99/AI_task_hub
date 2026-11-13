@@ -30,27 +30,43 @@ function matchSectionTitle(line: string): SectionTitle | null {
 
 export function parseRequirementSections(doc: string): {
   sections: Record<SectionTitle, string>;
+  extras: { heading: string; content: string }[];
   recognized: boolean;
 } {
   const buffers = Object.fromEntries(SECTION_TITLES.map((t) => [t, [] as string[]])) as Record<
     SectionTitle,
     string[]
   >;
+  const extras: { heading: string; lines: string[] }[] = [];
   let current: SectionTitle | null = null;
+  let currentExtra: { heading: string; lines: string[] } | null = null;
   let recognized = false;
   for (const line of doc.split('\n')) {
     const title = matchSectionTitle(line);
     if (title) {
       current = title;
+      currentExtra = null;
       recognized = true;
       continue;
     }
-    if (current) buffers[current].push(line);
+    // 用户手动编辑可能加入非标准节；以任意标题为界单独收集，避免污染上一节（尤其尚未解决的问题）。
+    if (/^#{1,6}\s+\S/.test(line.trim())) {
+      currentExtra = { heading: line.trim(), lines: [] };
+      extras.push(currentExtra);
+      current = null;
+      continue;
+    }
+    if (currentExtra) currentExtra.lines.push(line);
+    else if (current) buffers[current].push(line);
   }
   const sections = Object.fromEntries(
     SECTION_TITLES.map((t) => [t, buffers[t].join('\n').trim()]),
   ) as Record<SectionTitle, string>;
-  return { sections, recognized };
+  return {
+    sections,
+    extras: extras.map((e) => ({ heading: e.heading, content: e.lines.join('\n').trim() })),
+    recognized,
+  };
 }
 
 function isEmptySection(content: string): boolean {
@@ -59,7 +75,7 @@ function isEmptySection(content: string): boolean {
 }
 
 function renderSections(doc: string, level: number): string {
-  const { sections, recognized } = parseRequirementSections(doc);
+  const { sections, extras, recognized } = parseRequirementSections(doc);
   // 用户可能把文档改成非七节结构；无法识别时整段原样保留，避免丢数据。
   if (!recognized) return doc.trim();
   const hashes = '#'.repeat(level);
@@ -67,6 +83,9 @@ function renderSections(doc: string, level: number): string {
   for (const title of SECTION_TITLES) {
     if (title === '尚未解决的问题' && isEmptySection(sections[title])) continue;
     parts.push(`${hashes} ${title}\n${sections[title] || '暂无'}`);
+  }
+  for (const ex of extras) {
+    parts.push(`${hashes} ${ex.heading.replace(/^#{1,6}\s*/, '')}\n${ex.content}`);
   }
   return parts.join('\n\n');
 }
