@@ -1,0 +1,30 @@
+{
+  "name": "@ai-task-hub/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "NODE_ENV=production tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@ai-task-hub/shared": "workspace:*",
+    "@hono/node-server": "^2.1.8",
+    "better-sqlite3": "^13.1.1",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.18",
+    "nanoid": "^6.0.2",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^26.6.6",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
