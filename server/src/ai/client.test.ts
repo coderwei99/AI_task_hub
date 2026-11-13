@@ -22,6 +22,14 @@ beforeAll(async () => {
         const truncated = lastUser.includes('TRUNCATE');
         const text = truncated ? TRUNCATED_TEXT : NORMAL_TEXT;
         res.writeHead(200, { 'Content-Type': 'text/event-stream' });
+        if (lastUser.includes('STALL')) {
+          res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: 'x' }, finish_reason: null }] })}\n\n`);
+          const ping = setInterval(() => {
+            if (!res.destroyed) res.write(': ping\n\n');
+          }, 30);
+          req.on('close', () => clearInterval(ping));
+          return;
+        }
         const chunks = text.match(/.{1,7}/gs) ?? [];
         let i = 0;
         const timer = setInterval(() => {
@@ -54,7 +62,10 @@ beforeAll(async () => {
   cfg = { baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`, apiKey: 'sk-test', model: 'mock' };
 });
 
-afterAll(() => new Promise<void>((r) => server.close(() => r())));
+afterAll(() => {
+  server.closeAllConnections();
+  return new Promise<void>((r) => server.close(() => r()));
+});
 
 const messages: ChatMessage[] = [{ role: 'user', content: '打磨需求' }];
 
@@ -76,6 +87,12 @@ describe('streamChatCompletion', () => {
 
   it('中断信号使调用抛出', async () => {
     await expect(streamChatCompletion(cfg, messages, { signal: AbortSignal.abort() })).rejects.toThrow();
+  });
+
+  it('空闲超时（无数据）使调用抛出超时错误', async () => {
+    await expect(
+      streamChatCompletion(cfg, [{ role: 'user', content: 'STALL' }], { idleTimeoutMs: 60 }),
+    ).rejects.toThrow(/超时/);
   });
 });
 

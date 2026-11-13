@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dbPath, runMigrations } from './db';
 import { ApiError } from './lib/errors';
+import { chatRoutes } from './routes/chat';
 import { projectRoutes } from './routes/projects';
 import { settingsRoutes } from './routes/settings';
 import { taskRoutes } from './routes/tasks';
@@ -32,6 +33,7 @@ app.get('/api/health', (c) => c.json({ ok: true, version: '0.1.0', db: dbPath })
 app.route('/api/projects', projectRoutes);
 app.route('/api/projects', projectTodoRoutes);
 app.route('/api/todos', todoRoutes);
+app.route('/api/todos', chatRoutes);
 app.route('/api/tasks', taskRoutes);
 app.route('/api/settings', settingsRoutes);
 
