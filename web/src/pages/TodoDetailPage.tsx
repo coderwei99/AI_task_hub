@@ -48,6 +48,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
+import { useMediaQuery } from '@/lib/useMediaQuery';
 
 export default function TodoDetailPage() {
   const { projectId = '', todoId = '' } = useParams();
@@ -59,6 +60,7 @@ export default function TodoDetailPage() {
   const deleteTodo = useDeleteTodo();
   const confirmTodo = useConfirmTodo();
   const { copy, isPending: copyPending } = useCopyMarkdown();
+  const isMobile = useMediaQuery('(max-width: 767px)');
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
@@ -133,8 +135,8 @@ export default function TodoDetailPage() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b p-6 pb-4">
-        <div className="flex items-center justify-between gap-4">
+      <div className="border-b p-4 pb-3 md:p-6 md:pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
             <Link to={`/projects/${projectId}`} className="flex items-center gap-1 hover:text-foreground">
               <span>{project?.icon}</span>
@@ -232,26 +234,47 @@ export default function TodoDetailPage() {
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1">
-        <ChatPanel todo={todo} onConfirm={handleConfirm} />
+      {isMobile ? (
+        <Tabs defaultValue="chat" className="flex min-h-0 flex-1 flex-col gap-0">
+          <div className="border-b px-4 pt-2">
+            <TabsList variant="line" className="w-full">
+              <TabsTrigger value="chat">对话</TabsTrigger>
+              <TabsTrigger value="doc">需求文档</TabsTrigger>
+              <TabsTrigger value="activity">活动记录</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="chat" className="flex min-h-0 flex-1 flex-col">
+            <ChatPanel todo={todo} onConfirm={handleConfirm} />
+          </TabsContent>
+          <TabsContent value="doc" className="flex min-h-0 flex-1 flex-col">
+            <RequirementDocPanel todo={todo} activities={activities ?? []} />
+          </TabsContent>
+          <TabsContent value="activity" className="min-h-0 flex-1 overflow-y-auto p-4">
+            <ActivityTimeline activities={activities ?? []} />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <div className="flex min-h-0 flex-1">
+          <ChatPanel todo={todo} onConfirm={handleConfirm} />
 
-        <div className="flex w-[45%] min-w-0 flex-col">
-          <Tabs defaultValue="doc" className="flex min-h-0 flex-1 flex-col gap-0">
-            <div className="border-b px-4 pt-2">
-              <TabsList variant="line">
-                <TabsTrigger value="doc">需求文档</TabsTrigger>
-                <TabsTrigger value="activity">活动记录</TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="doc" className="flex min-h-0 flex-1 flex-col">
-              <RequirementDocPanel todo={todo} activities={activities ?? []} />
-            </TabsContent>
-            <TabsContent value="activity" className="min-h-0 flex-1 overflow-y-auto p-4">
-              <ActivityTimeline activities={activities ?? []} />
-            </TabsContent>
-          </Tabs>
+          <div className="flex w-[45%] min-w-0 flex-col">
+            <Tabs defaultValue="doc" className="flex min-h-0 flex-1 flex-col gap-0">
+              <div className="border-b px-4 pt-2">
+                <TabsList variant="line">
+                  <TabsTrigger value="doc">需求文档</TabsTrigger>
+                  <TabsTrigger value="activity">活动记录</TabsTrigger>
+                </TabsList>
+              </div>
+              <TabsContent value="doc" className="flex min-h-0 flex-1 flex-col">
+                <RequirementDocPanel todo={todo} activities={activities ?? []} />
+              </TabsContent>
+              <TabsContent value="activity" className="min-h-0 flex-1 overflow-y-auto p-4">
+                <ActivityTimeline activities={activities ?? []} />
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
-      </div>
+      )}
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
