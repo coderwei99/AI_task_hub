@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ArrowLeft, Copy, Pencil, Plus } from 'lucide-react';
-import { toast } from 'sonner';
 import {
   EXECUTION_STATUSES,
   EXECUTION_STATUS_LABELS,
@@ -17,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
 
 type View = 'requirement' | 'execution';
 
@@ -29,6 +29,7 @@ export default function BoardPage() {
   const { data: project, isLoading, error } = useProject(projectId);
   const { data: todos } = useTodos(projectId);
   const moveTodo = useMoveTodo(projectId);
+  const { copy, isPending: copyPending } = useCopyMarkdown();
 
   const [view, setView] = useState<View>(() =>
     localStorage.getItem(VIEW_KEY) === 'execution' ? 'execution' : 'requirement',
@@ -108,9 +109,9 @@ export default function BoardPage() {
           <div className="flex shrink-0 items-center gap-2">
             <Button
               variant="outline"
-              disabled={confirmedCount === 0}
-              title={confirmedCount === 0 ? '暂无已确认的 Todo' : '复制项目全部已确认 Todo'}
-              onClick={() => toast.info('项目 Markdown 导出将在 M3 实现')}
+              disabled={confirmedCount === 0 || copyPending}
+              title={confirmedCount === 0 ? '暂无已确认任务' : '复制项目全部已确认 Todo'}
+              onClick={() => copy(`/projects/${projectId}/export`)}
             >
               <Copy /> Copy 项目
             </Button>

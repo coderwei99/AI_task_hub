@@ -46,6 +46,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
 
 export default function TodoDetailPage() {
   const { projectId = '', todoId = '' } = useParams();
@@ -56,6 +57,7 @@ export default function TodoDetailPage() {
   const updateTodo = useUpdateTodo();
   const deleteTodo = useDeleteTodo();
   const confirmTodo = useConfirmTodo();
+  const { copy, isPending: copyPending } = useCopyMarkdown();
 
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
@@ -133,7 +135,7 @@ export default function TodoDetailPage() {
             <span className="font-mono">{formatTodoNumber(todo.number)}</span>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Button variant="outline" onClick={() => toast.info('Todo Markdown 导出将在 M3 实现')}>
+            <Button variant="outline" disabled={copyPending} onClick={() => copy(`/todos/${todo.id}/export`)}>
               <Copy /> Copy
             </Button>
             <Button
