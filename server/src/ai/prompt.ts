@@ -1,8 +1,13 @@
-import type { Message, Project, Todo } from '@ai-task-hub/shared';
+import {
+  DOC_DELIMITER,
+  SUFFICIENT_NO,
+  SUFFICIENT_YES,
+  type Message,
+  type Project,
+  type Todo,
+} from '@ai-task-hub/shared';
 
-export const DOC_DELIMITER = '===REQUIREMENT_DOC===';
-export const SUFFICIENT_YES = '===SUFFICIENT: YES===';
-export const SUFFICIENT_NO = '===SUFFICIENT: NO===';
+export { DOC_DELIMITER, SUFFICIENT_NO, SUFFICIENT_YES };
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
