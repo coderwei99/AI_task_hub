@@ -17,6 +17,7 @@ import { ApiClientError } from '@/api/client';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
 import { ChatPanel } from '@/components/ChatPanel';
 import { Markdown } from '@/components/Markdown';
+import { ProjectIcon } from '@/components/ProjectIcon';
 import { RequirementDocPanel } from '@/components/RequirementDocPanel';
 import { RequirementBadge } from '@/components/badges';
 import {
@@ -139,7 +140,7 @@ export default function TodoDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
             <Link to={`/projects/${projectId}`} className="flex items-center gap-1 hover:text-foreground">
-              <span>{project?.icon}</span>
+              {project && <ProjectIcon icon={project.icon} color={project.color} size="sm" />}
               <span className="truncate">{project?.name ?? '项目'}</span>
             </Link>
             <span>/</span>

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router';
 import { formatTodoNumber } from '@ai-task-hub/shared';
 import { useTasks } from '@/api/hooks';
 import { PageError } from '@/components/PageError';
+import { ProjectIcon } from '@/components/ProjectIcon';
 import { ExecutionBadge, PriorityBadge, RequirementBadge } from '@/components/badges';
 import { relativeTime } from '@/lib/format';
 
@@ -63,7 +64,7 @@ export default function AllTasksPage() {
                   <td className="px-4 py-2.5 text-muted-foreground">
                     {t.project ? (
                       <span className="flex items-center gap-1.5">
-                        <span>{t.project.icon}</span>
+                        <ProjectIcon icon={t.project.icon} color={t.project.color} size="sm" />
                         <span>{t.project.name}</span>
                       </span>
                     ) : (

@@ -6,6 +6,7 @@ import type { ProjectWithStats } from '@ai-task-hub/shared';
 import { useDeleteProject, useProjects } from '@/api/hooks';
 import { PageError } from '@/components/PageError';
 import { ProjectFormDialog } from '@/components/ProjectFormDialog';
+import { ProjectIcon } from '@/components/ProjectIcon';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,7 +84,7 @@ export default function ProjectsPage() {
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">{p.icon}</span>
+                  <ProjectIcon icon={p.icon} color={p.color} />
                   <span className="font-medium">{p.name}</span>
                 </div>
                 <DropdownMenu>

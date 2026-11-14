@@ -12,6 +12,7 @@ import { useProject, useTodos, useMoveTodo } from '@/api/hooks';
 import { ApiClientError } from '@/api/client';
 import { BoardColumns } from '@/components/BoardColumns';
 import { ProjectFormDialog } from '@/components/ProjectFormDialog';
+import { ProjectIcon } from '@/components/ProjectIcon';
 import { TodoFormDialog } from '@/components/TodoFormDialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -102,7 +103,7 @@ export default function BoardPage() {
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">{project.icon}</span>
+              <ProjectIcon icon={project.icon} color={project.color} />
               <h1 className="truncate text-xl font-semibold">{project.name}</h1>
               <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditOpen(true)}>
                 <Pencil />
