@@ -1,4 +1,5 @@
-import type { ApiErrorBody } from '@ai-task-hub/shared';
+import { formatMessage, type ApiErrorBody } from '@ai-task-hub/shared';
+import { currentLocale } from '@/i18n';
 
 export class ApiClientError extends Error {
   constructor(
@@ -13,7 +14,7 @@ export class ApiClientError extends Error {
 
 async function toApiError(res: Response): Promise<ApiClientError> {
   let code = 'ERROR';
-  let message = `请求失败 (${res.status})`;
+  let message = formatMessage(currentLocale(), 'requestFailed', { status: res.status });
   try {
     const data = (await res.json()) as ApiErrorBody;
     if (data.error) {
@@ -27,7 +28,10 @@ async function toApiError(res: Response): Promise<ApiClientError> {
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method,
-    headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+    headers: {
+      'Accept-Language': currentLocale(),
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+    },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) throw await toApiError(res);
@@ -35,7 +39,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 async function requestText(path: string): Promise<string> {
-  const res = await fetch(`/api${path}`, { method: 'GET' });
+  const res = await fetch(`/api${path}`, { method: 'GET', headers: { 'Accept-Language': currentLocale() } });
   if (!res.ok) throw await toApiError(res);
   return res.text();
 }

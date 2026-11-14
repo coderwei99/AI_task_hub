@@ -1,4 +1,5 @@
-import type { ApiErrorBody, ChatDoneEvent } from '@ai-task-hub/shared';
+import { formatMessage, type ApiErrorBody, type ChatDoneEvent } from '@ai-task-hub/shared';
+import { currentLocale } from '@/i18n';
 
 export interface ChatStreamHandlers {
   onDelta: (text: string) => void;
@@ -10,13 +11,13 @@ export interface ChatStreamHandlers {
 export async function streamChat(todoId: string, content: string, h: ChatStreamHandlers): Promise<void> {
   const res = await fetch(`/api/todos/${todoId}/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Accept-Language': currentLocale() },
     body: JSON.stringify({ content }),
     signal: h.signal,
   });
 
   if (!res.ok || !res.body) {
-    let message = `请求失败 (${res.status})`;
+    let message = formatMessage(currentLocale(), 'requestFailed', { status: res.status });
     try {
       const data = (await res.json()) as ApiErrorBody;
       if (data.error) message = data.error.message;

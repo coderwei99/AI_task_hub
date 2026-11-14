@@ -4,13 +4,14 @@ import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-qu
 import { RouterProvider } from 'react-router';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
+import i18n from './i18n';
 import { router } from './router';
 import './index.css';
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
-      const message = error instanceof Error ? error.message : '加载失败，请检查网络后重试';
+      const message = error instanceof Error ? error.message : i18n.t('common.loadFailed');
       toast.error(message, { id: message });
     },
   }),
