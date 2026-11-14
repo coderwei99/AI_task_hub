@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createProjectSchema, type Project } from '@ai-task-hub/shared';
+import { createProjectSchema, type Project, type ProjectColor } from '@ai-task-hub/shared';
 import { toast } from 'sonner';
 import { useCreateProject, useUpdateProject } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
@@ -7,9 +7,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+import { IconPicker } from '@/components/IconPicker';
 
-const EMOJIS = ['📁', '💬', '✍️', '🧩', '🚀', '📦', '🎨', '🔧'];
+const DEFAULT_ICON = 'lucide:folder';
+const DEFAULT_COLOR: ProjectColor = 'blue';
 
 interface Props {
   open: boolean;
@@ -20,7 +21,8 @@ interface Props {
 export function ProjectFormDialog({ open, onOpenChange, project }: Props) {
   const isEdit = !!project;
   const [name, setName] = useState('');
-  const [icon, setIcon] = useState('📁');
+  const [icon, setIcon] = useState(DEFAULT_ICON);
+  const [color, setColor] = useState<ProjectColor>(DEFAULT_COLOR);
   const [description, setDescription] = useState('');
   const [techStack, setTechStack] = useState('');
   const [constraints, setConstraints] = useState('');
@@ -33,7 +35,8 @@ export function ProjectFormDialog({ open, onOpenChange, project }: Props) {
   useEffect(() => {
     if (open) {
       setName(project?.name ?? '');
-      setIcon(project?.icon ?? '📁');
+      setIcon(project?.icon ?? DEFAULT_ICON);
+      setColor(project?.color ?? DEFAULT_COLOR);
       setDescription(project?.description ?? '');
       setTechStack(project?.techStack ?? '');
       setConstraints(project?.constraints ?? '');
@@ -42,7 +45,7 @@ export function ProjectFormDialog({ open, onOpenChange, project }: Props) {
   }, [open, project]);
 
   async function handleSubmit() {
-    const parsed = createProjectSchema.safeParse({ name, icon, description, techStack, constraints });
+    const parsed = createProjectSchema.safeParse({ name, icon, color, description, techStack, constraints });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? '参数错误');
       return;
@@ -69,26 +72,11 @@ export function ProjectFormDialog({ open, onOpenChange, project }: Props) {
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>图标</Label>
-            <div className="flex flex-wrap gap-1">
-              {EMOJIS.map((e) => (
-                <button
-                  key={e}
-                  type="button"
-                  onClick={() => setIcon(e)}
-                  className={cn(
-                    'flex size-9 items-center justify-center rounded-md border text-lg',
-                    icon === e ? 'border-primary bg-accent' : 'border-transparent hover:bg-accent',
-                  )}
-                >
-                  {e}
-                </button>
-              ))}
+            <Label htmlFor="project-name">图标与名称 *</Label>
+            <div className="flex items-center gap-3">
+              <IconPicker icon={icon} color={color} onIconChange={setIcon} onColorChange={setColor} />
+              <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：小美客服" />
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="project-name">项目名称 *</Label>
-            <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：小美客服" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="project-desc">描述</Label>
