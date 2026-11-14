@@ -35,6 +35,7 @@ function makeProject(overrides: Partial<Project> = {}): Project {
     id: 'p1',
     name: '小美客服',
     icon: '📁',
+    color: 'gray',
     description: '客服工作台',
     techStack: 'Vue 2 + Element UI（管理端）/ uni-app（移动端）',
     constraints: '仅修改受影响模块；i18n 只改源文件后重新构建',

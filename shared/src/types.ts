@@ -7,6 +7,11 @@ export type ExecutionStatus = (typeof EXECUTION_STATUSES)[number];
 export const PRIORITIES = ['high', 'medium', 'low'] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
+export const PROJECT_COLORS = ['gray', 'red', 'orange', 'amber', 'green', 'teal', 'blue', 'indigo', 'violet', 'pink'] as const;
+export type ProjectColor = (typeof PROJECT_COLORS)[number];
+
+export const LUCIDE_ICON_PREFIX = 'lucide:';
+
 export const REQUIREMENT_STATUS_LABELS: Record<RequirementStatus, string> = {
   pending: '待打磨',
   polishing: '打磨中',
@@ -33,6 +38,7 @@ export interface Project {
   id: string;
   name: string;
   icon: string;
+  color: ProjectColor;
   description: string;
   techStack: string;
   constraints: string;
@@ -113,7 +119,7 @@ export const SUFFICIENT_YES = '===SUFFICIENT: YES===';
 export const SUFFICIENT_NO = '===SUFFICIENT: NO===';
 
 export interface TaskWithProject extends Todo {
-  project: { id: string; name: string; icon: string } | null;
+  project: { id: string; name: string; icon: string; color: ProjectColor } | null;
 }
 
 export interface ApiErrorBody {

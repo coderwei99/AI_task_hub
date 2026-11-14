@@ -1,16 +1,37 @@
 import { z } from 'zod';
-import { EXECUTION_STATUSES, PRIORITIES } from './types';
+import { EXECUTION_STATUSES, LUCIDE_ICON_PREFIX, PRIORITIES, PROJECT_COLORS } from './types';
+
+const projectIconSchema = z
+  .string()
+  .trim()
+  .min(1, '请选择图标')
+  .max(80)
+  .refine(
+    (v) => (v.startsWith(LUCIDE_ICON_PREFIX) ? /^lucide:[a-z0-9-]+$/.test(v) : v.length <= 16),
+    '图标格式不正确',
+  );
+
+const projectFields = {
+  name: z.string().trim().min(1, '项目名称不能为空').max(100),
+  icon: projectIconSchema,
+  color: z.enum(PROJECT_COLORS),
+  description: z.string().max(2000),
+  techStack: z.string().max(5000),
+  constraints: z.string().max(10000),
+};
 
 export const createProjectSchema = z.object({
-  name: z.string().trim().min(1, '项目名称不能为空').max(100),
-  icon: z.string().max(8).default('📁'),
-  description: z.string().max(2000).default(''),
-  techStack: z.string().max(5000).default(''),
-  constraints: z.string().max(10000).default(''),
+  ...projectFields,
+  icon: projectFields.icon.default('📁'),
+  color: projectFields.color.default('gray'),
+  description: projectFields.description.default(''),
+  techStack: projectFields.techStack.default(''),
+  constraints: projectFields.constraints.default(''),
 });
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 
-export const updateProjectSchema = createProjectSchema.partial();
+// Built from defaults-free fields: zod 4 still applies .default() inside .partial(), which would reset omitted fields on PATCH
+export const updateProjectSchema = z.object(projectFields).partial();
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 
 export const createTodoSchema = z.object({
