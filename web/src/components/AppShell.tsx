@@ -3,6 +3,7 @@ import { FolderKanban, ListTodo, Menu, Settings } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useMediaQuery } from '@/lib/useMediaQuery';
 import { cn } from '@/lib/utils';
 
@@ -56,12 +57,18 @@ export default function AppShell() {
         </Button>
         <span className="text-lg">🧩</span>
         <span className="font-semibold">AI Task Hub</span>
+        <div className="ml-auto">
+          <ThemeToggle />
+        </div>
       </div>
 
       <aside className="hidden w-60 shrink-0 flex-col border-r bg-muted/30 md:flex">
         <Brand />
         <NavLinks />
-        <div className="border-t p-3 text-xs text-muted-foreground">v0.1.0 · 本地单机</div>
+        <div className="flex items-center justify-between border-t py-2 pr-2 pl-3 text-xs text-muted-foreground">
+          <span>v0.1.0 · 本地单机</span>
+          <ThemeToggle />
+        </div>
       </aside>
 
       <Sheet open={open && isMobile} onOpenChange={setOpen}>
