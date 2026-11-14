@@ -6,6 +6,7 @@ const project: Project = {
   id: 'p1',
   name: '小美客服',
   icon: '💬',
+  color: 'gray',
   description: 'Vue2 客服系统',
   techStack: 'Vue 2 + Element UI',
   constraints: '统一组合式 API',

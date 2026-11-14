@@ -4,6 +4,7 @@ import type {
   ExecutionStatus,
   MessageRole,
   Priority,
+  ProjectColor,
   RequirementStatus,
 } from '@ai-task-hub/shared';
 
@@ -11,6 +12,7 @@ export const projects = sqliteTable('projects', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   icon: text('icon').notNull().default('📁'),
+  color: text('color').$type<ProjectColor>().notNull().default('gray'),
   description: text('description').notNull().default(''),
   techStack: text('techStack').notNull().default(''),
   constraints: text('constraints').notNull().default(''),

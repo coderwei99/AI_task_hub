@@ -11,7 +11,7 @@ taskRoutes.get('/', (c) => {
   const projectMap = new Map(projectList.map((p) => [p.id, p]));
   const result = rows.map((t) => {
     const p = projectMap.get(t.projectId);
-    return { ...t, project: p ? { id: p.id, name: p.name, icon: p.icon } : null };
+    return { ...t, project: p ? { id: p.id, name: p.name, icon: p.icon, color: p.color } : null };
   });
   return c.json(result);
 });
