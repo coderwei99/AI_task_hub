@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { createProjectSchema, type Project, type ProjectColor } from '@ai-task-hub/shared';
+import { createProjectSchema, parseWithLocale, type Project, type ProjectColor } from '@ai-task-hub/shared';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+import { currentLocale } from '@/i18n';
 import { useCreateProject, useUpdateProject } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -19,6 +21,7 @@ interface Props {
 }
 
 export function ProjectFormDialog({ open, onOpenChange, project }: Props) {
+  const { t } = useTranslation();
   const isEdit = !!project;
   const [name, setName] = useState('');
   const [icon, setIcon] = useState(DEFAULT_ICON);
@@ -45,22 +48,26 @@ export function ProjectFormDialog({ open, onOpenChange, project }: Props) {
   }, [open, project]);
 
   async function handleSubmit() {
-    const parsed = createProjectSchema.safeParse({ name, icon, color, description, techStack, constraints });
+    const parsed = parseWithLocale(
+      createProjectSchema,
+      { name, icon, color, description, techStack, constraints },
+      currentLocale(),
+    );
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? '参数错误');
+      setError(parsed.message);
       return;
     }
     try {
       if (isEdit) {
         await updateProject.mutateAsync({ id: project!.id, input: parsed.data });
-        toast.success('项目已更新');
+        toast.success(t('projectForm.updated'));
       } else {
         await createProject.mutateAsync(parsed.data);
-        toast.success('项目已创建');
+        toast.success(t('projectForm.created'));
       }
       onOpenChange(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '保存失败');
+      setError(e instanceof Error ? e.message : t('common.saveFailed'));
     }
   }
 
@@ -68,48 +75,48 @@ export function ProjectFormDialog({ open, onOpenChange, project }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? '编辑项目' : '新建项目'}</DialogTitle>
+          <DialogTitle>{isEdit ? t('projectForm.editTitle') : t('projectForm.createTitle')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="project-name">图标与名称 *</Label>
+            <Label htmlFor="project-name">{t('projectForm.iconAndName')}</Label>
             <div className="flex items-center gap-3">
               <IconPicker icon={icon} color={color} onIconChange={setIcon} onColorChange={setColor} />
-              <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：小美客服" />
+              <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('projectForm.namePlaceholder')} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="project-desc">描述</Label>
+            <Label htmlFor="project-desc">{t('projectForm.description')}</Label>
             <Textarea id="project-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="project-tech">技术栈</Label>
+            <Label htmlFor="project-tech">{t('projectForm.techStack')}</Label>
             <Textarea
               id="project-tech"
               value={techStack}
               onChange={(e) => setTechStack(e.target.value)}
               rows={2}
-              placeholder="例如：Vue 2 + Element UI"
+              placeholder={t('projectForm.techStackPlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="project-constraints">公共约束</Label>
+            <Label htmlFor="project-constraints">{t('projectForm.constraints')}</Label>
             <Textarea
               id="project-constraints"
               value={constraints}
               onChange={(e) => setConstraints(e.target.value)}
               rows={3}
-              placeholder="架构、编码规范等"
+              placeholder={t('projectForm.constraintsPlaceholder')}
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={pending}>
-            {pending ? '保存中…' : '保存'}
+            {pending ? t('common.saving') : t('common.save')}
           </Button>
         </DialogFooter>
       </DialogContent>

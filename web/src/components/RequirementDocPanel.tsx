@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Eye, Pencil, Save, Undo2, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import type { Activity, Todo } from '@ai-task-hub/shared';
 import { useUpdateTodo } from '@/api/hooks';
 import { Markdown } from '@/components/Markdown';
@@ -13,6 +14,7 @@ interface RequirementDocPanelProps {
 }
 
 export function RequirementDocPanel({ todo, activities }: RequirementDocPanelProps) {
+  const { t } = useTranslation();
   const updateTodo = useUpdateTodo();
   const [editing, setEditing] = useState(false);
   const [preview, setPreview] = useState(false);
@@ -32,9 +34,9 @@ export function RequirementDocPanel({ todo, activities }: RequirementDocPanelPro
     try {
       await updateTodo.mutateAsync({ id: todo.id, input: { requirementDoc: draft } });
       setEditing(false);
-      toast.success('需求文档已保存');
+      toast.success(t('doc.saved'));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '文档保存失败');
+      toast.error(e instanceof Error ? e.message : t('doc.saveFailed'));
     }
   }
 
@@ -42,9 +44,9 @@ export function RequirementDocPanel({ todo, activities }: RequirementDocPanelPro
     if (typeof prevDoc !== 'string') return;
     try {
       await updateTodo.mutateAsync({ id: todo.id, input: { requirementDoc: prevDoc } });
-      toast.success('已回退到上一版');
+      toast.success(t('doc.rolledBack'));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '回退失败');
+      toast.error(e instanceof Error ? e.message : t('doc.rollbackFailed'));
     }
   }
 
@@ -57,7 +59,7 @@ export function RequirementDocPanel({ todo, activities }: RequirementDocPanelPro
               {draft ? (
                 <Markdown content={draft} />
               ) : (
-                <p className="py-10 text-center text-sm text-muted-foreground">暂无内容</p>
+                <p className="py-10 text-center text-sm text-muted-foreground">{t('doc.emptyDraft')}</p>
               )}
             </div>
           ) : (
@@ -65,21 +67,21 @@ export function RequirementDocPanel({ todo, activities }: RequirementDocPanelPro
               autoFocus
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="在此编辑需求文档（Markdown）…"
+              placeholder={t('doc.placeholder')}
               className="min-h-0 flex-1 resize-none font-mono text-sm [field-sizing:fixed]"
             />
           )}
         </div>
         <div className="flex items-center justify-between gap-2 border-t p-2">
           <Button variant="ghost" size="sm" onClick={() => setPreview((p) => !p)}>
-            {preview ? <Pencil /> : <Eye />} {preview ? '编辑' : '预览'}
+            {preview ? <Pencil /> : <Eye />} {preview ? t('doc.edit') : t('doc.preview')}
           </Button>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
-              <X /> 取消
+              <X /> {t('common.cancel')}
             </Button>
             <Button size="sm" onClick={saveEdit} disabled={updateTodo.isPending}>
-              <Save /> 保存
+              <Save /> {t('common.save')}
             </Button>
           </div>
         </div>
@@ -93,17 +95,17 @@ export function RequirementDocPanel({ todo, activities }: RequirementDocPanelPro
         {todo.requirementDoc ? (
           <Markdown content={todo.requirementDoc} />
         ) : (
-          <p className="py-10 text-center text-sm text-muted-foreground">暂无需求文档，AI 打磨后自动生成。</p>
+          <p className="py-10 text-center text-sm text-muted-foreground">{t('doc.empty')}</p>
         )}
       </div>
       <div className="flex items-center justify-end gap-2 border-t p-2">
         {canRollback && (
           <Button variant="outline" size="sm" onClick={rollback} disabled={updateTodo.isPending}>
-            <Undo2 /> 回退上一版
+            <Undo2 /> {t('doc.rollback')}
           </Button>
         )}
         <Button variant="outline" size="sm" onClick={startEdit}>
-          <Pencil /> 编辑文档
+          <Pencil /> {t('doc.editDoc')}
         </Button>
       </div>
     </div>

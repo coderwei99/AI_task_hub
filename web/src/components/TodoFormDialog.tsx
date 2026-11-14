@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { createTodoSchema, type Priority, type Todo } from '@ai-task-hub/shared';
+import { createTodoSchema, parseWithLocale, PRIORITIES, type Priority, type Todo } from '@ai-task-hub/shared';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+import { currentLocale } from '@/i18n';
 import { useCreateTodo } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -17,6 +19,7 @@ interface Props {
 }
 
 export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Props) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [originalDescription, setOriginalDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
@@ -34,18 +37,18 @@ export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Pro
   }, [open]);
 
   async function handleSubmit() {
-    const parsed = createTodoSchema.safeParse({ title, originalDescription, priority });
+    const parsed = parseWithLocale(createTodoSchema, { title, originalDescription, priority }, currentLocale());
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? '参数错误');
+      setError(parsed.message);
       return;
     }
     try {
       const todo = await createTodo.mutateAsync({ projectId, input: parsed.data });
-      toast.success('Todo 已创建');
+      toast.success(t('todoForm.created'));
       onOpenChange(false);
       onCreated(todo);
     } catch (e) {
-      setError(e instanceof Error ? e.message : '创建失败');
+      setError(e instanceof Error ? e.message : t('todoForm.createFailed'));
     }
   }
 
@@ -53,38 +56,40 @@ export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Pro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>新建 Todo</DialogTitle>
+          <DialogTitle>{t('todoForm.title')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="todo-title">标题 *</Label>
+            <Label htmlFor="todo-title">{t('todoForm.titleLabel')}</Label>
             <Input
               id="todo-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="例如：优化消息加载速度"
+              placeholder={t('todoForm.titlePlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="todo-desc">原始描述 *</Label>
+            <Label htmlFor="todo-desc">{t('todoForm.descLabel')}</Label>
             <Textarea
               id="todo-desc"
               value={originalDescription}
               onChange={(e) => setOriginalDescription(e.target.value)}
               rows={5}
-              placeholder="把你最初的想法写下来，AI 会帮你逐步澄清…"
+              placeholder={t('todoForm.descPlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label>优先级</Label>
+            <Label>{t('todoForm.priority')}</Label>
             <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="high">高</SelectItem>
-                <SelectItem value="medium">中</SelectItem>
-                <SelectItem value="low">低</SelectItem>
+                {PRIORITIES.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {t(`priority.${p}`)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -92,10 +97,10 @@ export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Pro
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            取消
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={createTodo.isPending}>
-            {createTodo.isPending ? '创建中…' : '创建'}
+            {createTodo.isPending ? t('common.creating') : t('common.create')}
           </Button>
         </DialogFooter>
       </DialogContent>

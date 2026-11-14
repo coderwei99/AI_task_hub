@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { MoreHorizontal, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import type { ProjectWithStats } from '@ai-task-hub/shared';
 import { useDeleteProject, useProjects } from '@/api/hooks';
 import { PageError } from '@/components/PageError';
@@ -28,6 +29,7 @@ import {
 import { relativeTime } from '@/lib/format';
 
 export default function ProjectsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: projects, isPending, error, refetch } = useProjects();
   const deleteProject = useDeleteProject();
@@ -47,31 +49,31 @@ export default function ProjectsPage() {
     if (!deleting) return;
     try {
       await deleteProject.mutateAsync(deleting.id);
-      toast.success('项目已删除');
+      toast.success(t('projects.deleted'));
       setDeleting(null);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '删除失败');
+      toast.error(e instanceof Error ? e.message : t('common.deleteFailed'));
     }
   }
 
   return (
     <div className="p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">我的项目</h1>
+        <h1 className="text-xl font-semibold">{t('projects.title')}</h1>
         <Button onClick={openCreate}>
-          <Plus /> 新建项目
+          <Plus /> {t('projects.create')}
         </Button>
       </div>
 
       {isPending ? (
-        <p className="text-sm text-muted-foreground">加载中…</p>
+        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
       ) : error ? (
-        <PageError message="项目加载失败" onRetry={() => refetch()} />
+        <PageError message={t('projects.loadFailed')} onRetry={() => refetch()} />
       ) : !projects?.length ? (
         <div className="flex flex-col items-center gap-3 py-20 text-center">
-          <p className="text-muted-foreground">还没有项目</p>
+          <p className="text-muted-foreground">{t('projects.empty')}</p>
           <Button onClick={openCreate}>
-            <Plus /> 创建第一个项目
+            <Plus /> {t('projects.createFirst')}
           </Button>
         </div>
       ) : (
@@ -94,20 +96,20 @@ export default function ProjectsPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenuItem onClick={() => openEdit(p)}>编辑</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openEdit(p)}>{t('common.edit')}</DropdownMenuItem>
                     <DropdownMenuItem className="text-destructive" onClick={() => setDeleting(p)}>
-                      删除
+                      {t('common.delete')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
               {p.description && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>}
               <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
-                <span>任务 {p.stats.total}</span>
-                <span>待打磨 {p.stats.pending}</span>
-                <span>已确认 {p.stats.confirmed}</span>
+                <span>{t('projects.statTotal', { count: p.stats.total })}</span>
+                <span>{t('projects.statPending', { count: p.stats.pending })}</span>
+                <span>{t('projects.statConfirmed', { count: p.stats.confirmed })}</span>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">更新于 {relativeTime(p.updatedAt)}</p>
+              <p className="mt-2 text-xs text-muted-foreground">{t('projects.updatedAt', { time: relativeTime(p.updatedAt) })}</p>
             </Card>
           ))}
         </div>
@@ -118,16 +120,16 @@ export default function ProjectsPage() {
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>删除项目「{deleting?.name}」？</AlertDialogTitle>
-            <AlertDialogDescription>将同时删除该项目下的全部 Todo，此操作不可撤销。</AlertDialogDescription>
+            <AlertDialogTitle>{t('projects.deleteTitle', { name: deleting?.name })}</AlertDialogTitle>
+            <AlertDialogDescription>{t('projects.deleteDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={confirmDelete}
             >
-              删除
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

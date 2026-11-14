@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { DynamicIcon, iconNames, type IconName } from 'lucide-react/dynamic';
+import { useTranslation } from 'react-i18next';
 import { PROJECT_COLORS, type ProjectColor } from '@ai-task-hub/shared';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) {
+  const { t } = useTranslation();
   const parsed = parseIcon(icon);
   const [tab, setTab] = useState<string>(parsed.kind === 'emoji' ? 'emoji' : 'icon');
   const [query, setQuery] = useState('');
@@ -48,7 +50,7 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
         <button
           type="button"
           className="flex size-12 items-center justify-center rounded-lg border transition-colors hover:bg-accent"
-          aria-label="选择图标"
+          aria-label={t('iconPicker.trigger')}
         >
           <ProjectIcon icon={icon} color={color} size="lg" />
         </button>
@@ -57,8 +59,8 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
         <Tabs value={tab} onValueChange={setTab} className="gap-0">
           <div className="border-b px-3 pt-2">
             <TabsList variant="line">
-              <TabsTrigger value="icon">图标</TabsTrigger>
-              <TabsTrigger value="emoji">Emoji</TabsTrigger>
+              <TabsTrigger value="icon">{t('iconPicker.icons')}</TabsTrigger>
+              <TabsTrigger value="emoji">{t('iconPicker.emoji')}</TabsTrigger>
             </TabsList>
           </div>
 
@@ -68,8 +70,8 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
                 <button
                   key={c}
                   type="button"
-                  title={PROJECT_COLOR_STYLES[c].label}
-                  aria-label={PROJECT_COLOR_STYLES[c].label}
+                  title={t(`projectColor.${c}`)}
+                  aria-label={t(`projectColor.${c}`)}
                   onClick={() => onColorChange(c)}
                   className={cn(
                     'size-5 rounded-full ring-offset-2 ring-offset-popover transition-shadow',
@@ -82,11 +84,11 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="搜索图标，如：火箭、chart、user"
+              placeholder={t('iconPicker.searchPlaceholder')}
               className="h-8"
             />
             {results.length === 0 ? (
-              <p className="py-6 text-center text-xs text-muted-foreground">没有匹配的图标</p>
+              <p className="py-6 text-center text-xs text-muted-foreground">{t('iconPicker.noMatch')}</p>
             ) : (
               <div className="grid max-h-56 grid-cols-8 gap-1 overflow-y-auto">
                 {results.map((name) => {
@@ -115,7 +117,7 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
               </div>
             )}
             {query.trim() && results.length === MAX_RESULTS && (
-              <p className="text-xs text-muted-foreground">仅显示前 {MAX_RESULTS} 个结果，请输入更精确的关键词</p>
+              <p className="text-xs text-muted-foreground">{t('iconPicker.truncated', { count: MAX_RESULTS })}</p>
             )}
           </TabsContent>
 
@@ -147,7 +149,7 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
               <Input
                 value={customEmoji}
                 onChange={(e) => setCustomEmoji(e.target.value)}
-                placeholder="自定义 Emoji，回车确认"
+                placeholder={t('iconPicker.customEmoji')}
                 maxLength={16}
                 className="h-8"
               />

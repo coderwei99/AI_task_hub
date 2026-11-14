@@ -1,11 +1,5 @@
-import {
-  EXECUTION_STATUS_LABELS,
-  PRIORITY_LABELS,
-  REQUIREMENT_STATUS_LABELS,
-  type ExecutionStatus,
-  type Priority,
-  type RequirementStatus,
-} from '@ai-task-hub/shared';
+import { useTranslation } from 'react-i18next';
+import type { ExecutionStatus, Priority, RequirementStatus } from '@ai-task-hub/shared';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -32,25 +26,28 @@ const PRIORITY_COLORS: Record<Priority, string> = {
 };
 
 export function RequirementBadge({ status, className }: { status: RequirementStatus; className?: string }) {
+  const { t } = useTranslation();
   return (
     <Badge variant="secondary" className={cn('font-normal', REQUIREMENT_COLORS[status], className)}>
-      {REQUIREMENT_STATUS_LABELS[status]}
+      {t(`requirementStatus.${status}`)}
     </Badge>
   );
 }
 
 export function ExecutionBadge({ status, className }: { status: ExecutionStatus; className?: string }) {
+  const { t } = useTranslation();
   return (
     <Badge variant="secondary" className={cn('font-normal', EXECUTION_COLORS[status], className)}>
-      {EXECUTION_STATUS_LABELS[status]}
+      {t(`executionStatus.${status}`)}
     </Badge>
   );
 }
 
 export function PriorityBadge({ priority, className }: { priority: Priority; className?: string }) {
+  const { t } = useTranslation();
   return (
     <Badge variant="secondary" className={cn('font-normal', PRIORITY_COLORS[priority], className)}>
-      {PRIORITY_LABELS[priority]}
+      {t(`priority.${priority}`)}
     </Badge>
   );
 }

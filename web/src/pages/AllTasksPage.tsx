@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { formatTodoNumber } from '@ai-task-hub/shared';
 import { useTasks } from '@/api/hooks';
 import { PageError } from '@/components/PageError';
@@ -7,6 +8,7 @@ import { ExecutionBadge, PriorityBadge, RequirementBadge } from '@/components/ba
 import { relativeTime } from '@/lib/format';
 
 export default function AllTasksPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: tasks, isPending, error, refetch } = useTasks();
 
@@ -17,35 +19,35 @@ export default function AllTasksPage() {
   return (
     <div className="p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">全部任务</h1>
+        <h1 className="text-xl font-semibold">{t('tasks.title')}</h1>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-        <span className="rounded-full bg-muted px-3 py-1">全部 {all.length}</span>
-        <span className="rounded-full bg-muted px-3 py-1">待打磨 {pendingCount}</span>
-        <span className="rounded-full bg-muted px-3 py-1">已确认 {confirmedCount}</span>
+        <span className="rounded-full bg-muted px-3 py-1">{t('tasks.countAll', { count: all.length })}</span>
+        <span className="rounded-full bg-muted px-3 py-1">{t('tasks.countPending', { count: pendingCount })}</span>
+        <span className="rounded-full bg-muted px-3 py-1">{t('tasks.countConfirmed', { count: confirmedCount })}</span>
       </div>
 
       {isPending ? (
-        <p className="text-sm text-muted-foreground">加载中…</p>
+        <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
       ) : error ? (
-        <PageError message="任务加载失败" onRetry={() => refetch()} />
+        <PageError message={t('tasks.loadFailed')} onRetry={() => refetch()} />
       ) : all.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-20 text-center text-muted-foreground">
-          <p>还没有任务</p>
-          <p className="text-xs">到项目看板中新建 Todo。</p>
+          <p>{t('tasks.empty')}</p>
+          <p className="text-xs">{t('tasks.emptyHint')}</p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/50 text-left text-xs text-muted-foreground">
-                <th className="px-4 py-2.5 font-medium">任务</th>
-                <th className="px-4 py-2.5 font-medium">所属项目</th>
-                <th className="px-4 py-2.5 font-medium">需求状态</th>
-                <th className="px-4 py-2.5 font-medium">执行状态</th>
-                <th className="px-4 py-2.5 font-medium">优先级</th>
-                <th className="px-4 py-2.5 font-medium">更新时间</th>
+                <th className="px-4 py-2.5 font-medium">{t('tasks.colTask')}</th>
+                <th className="px-4 py-2.5 font-medium">{t('tasks.colProject')}</th>
+                <th className="px-4 py-2.5 font-medium">{t('tasks.colRequirement')}</th>
+                <th className="px-4 py-2.5 font-medium">{t('tasks.colExecution')}</th>
+                <th className="px-4 py-2.5 font-medium">{t('tasks.colPriority')}</th>
+                <th className="px-4 py-2.5 font-medium">{t('tasks.colUpdated')}</th>
               </tr>
             </thead>
             <tbody>

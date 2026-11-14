@@ -10,6 +10,7 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { useTranslation } from 'react-i18next';
 import type { ExecutionStatus, Todo } from '@ai-task-hub/shared';
 import { TodoCard } from '@/components/TodoCard';
 import { cn } from '@/lib/utils';
@@ -38,6 +39,7 @@ function ColumnShell({
   isOver?: boolean;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className={cn(
@@ -51,7 +53,7 @@ function ColumnShell({
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
         {count === 0 ? (
-          <p className="px-1 py-6 text-center text-xs text-muted-foreground/60">暂无任务</p>
+          <p className="px-1 py-6 text-center text-xs text-muted-foreground/60">{t('board.columnEmpty')}</p>
         ) : (
           children
         )}

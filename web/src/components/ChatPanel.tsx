@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2, Send, Settings2, Sparkles, Square } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { DOC_DELIMITER, type RequirementStatus, type Todo } from '@ai-task-hub/shared';
 import { streamChat } from '@/api/chat';
 import { queryKeys, useMessages, useSettings } from '@/api/hooks';
@@ -29,6 +30,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
+  const { t } = useTranslation();
   const { data: messages } = useMessages(todo.id);
   const { data: settings } = useSettings();
   const qc = useQueryClient();
@@ -80,8 +82,8 @@ export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
           setStreamText('');
           setStreaming(false);
           refreshAfterTurn();
-          if (ev.parseWarning) toast.warning('本轮需求文档未更新，可重试');
-          else if (ev.docRecovered) toast.info('本轮文档已通过补救整理');
+          if (ev.parseWarning) toast.warning(t('chat.parseWarning'));
+          else if (ev.docRecovered) toast.info(t('chat.docRecovered'));
         },
         onError: (message) => {
           setStreaming(false);
@@ -96,7 +98,7 @@ export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
       setStreaming(false);
       setStreamText('');
       setPendingUser(null);
-      if (!controller.signal.aborted) toast.error(e instanceof Error ? e.message : '对话失败');
+      if (!controller.signal.aborted) toast.error(e instanceof Error ? e.message : t('chat.failed'));
       qc.invalidateQueries({ queryKey: queryKeys.messages(todo.id) });
       refreshAfterTurn();
     } finally {
@@ -108,13 +110,13 @@ export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
 
   return (
     <div className="flex w-full min-w-0 flex-col md:w-[55%] md:border-r">
-      <div className="border-b px-4 py-2 text-sm font-medium">AI 对话</div>
+      <div className="border-b px-4 py-2 text-sm font-medium">{t('chat.header')}</div>
 
       <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
         {empty ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground">
-            <p>描述你的想法，AI 会帮你澄清并整理成需求文档。</p>
-            <p className="text-xs">支持多轮对话，右侧实时生成文档。</p>
+            <p>{t('chat.emptyTitle')}</p>
+            <p className="text-xs">{t('chat.emptyHint')}</p>
           </div>
         ) : (
           <>
@@ -127,7 +129,7 @@ export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
                 role="assistant"
                 content={displayText}
                 streaming
-                tail={docPhase ? '正在整理需求文档…' : undefined}
+                tail={docPhase ? t('chat.organizing') : undefined}
               />
             )}
           </>
@@ -149,26 +151,26 @@ export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
                 }
               }}
               disabled={streaming}
-              placeholder="继续补充需求或回答 AI 的问题…（Enter 发送，Shift+Enter 换行）"
+              placeholder={t('chat.placeholder')}
               className="max-h-40 min-h-[44px] flex-1 resize-none"
               rows={1}
             />
             {streaming ? (
               <Button variant="outline" onClick={stop} className="shrink-0">
-                <Square /> 停止
+                <Square /> {t('chat.stop')}
               </Button>
             ) : (
               <Button onClick={send} disabled={!input.trim()} className="shrink-0">
-                <Send /> 发送
+                <Send /> {t('chat.send')}
               </Button>
             )}
           </div>
         ) : (
           <div className="flex items-center justify-between gap-3 rounded-md border border-dashed p-3 text-sm">
-            <span className="text-muted-foreground">请先在设置中配置 AI 模型</span>
+            <span className="text-muted-foreground">{t('chat.notConfigured')}</span>
             <Button variant="outline" size="sm" asChild>
               <Link to="/settings">
-                <Settings2 /> 去配置
+                <Settings2 /> {t('chat.goConfigure')}
               </Link>
             </Button>
           </div>
@@ -229,10 +231,11 @@ function StatusBanner({
   streaming: boolean;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
   if (status === 'polishing') {
     return (
       <div className="flex items-center gap-2 border-t bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" /> AI 正在帮你完善需求…
+        <Loader2 className="size-4 animate-spin" /> {t('chat.polishing')}
       </div>
     );
   }
@@ -241,10 +244,10 @@ function StatusBanner({
       <div className="flex items-center justify-between gap-2 border-t bg-primary/5 px-4 py-2 text-sm">
         <span className="flex items-center gap-2">
           <Sparkles className="size-4 shrink-0 text-primary" />
-          {status === 'ai_ready' ? 'AI 认为需求已充分，请查看右侧文档后确认' : '需求已修改，请重新确认'}
+          {status === 'ai_ready' ? t('chat.aiReady') : t('chat.reconfirm')}
         </span>
         <Button size="sm" onClick={onConfirm} disabled={streaming} className="shrink-0">
-          <Check /> 确认需求
+          <Check /> {t('todo.confirm')}
         </Button>
       </div>
     );
@@ -252,7 +255,7 @@ function StatusBanner({
   if (status === 'confirmed') {
     return (
       <div className="flex items-center gap-2 border-t bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
-        <Check className="size-4 text-green-600 dark:text-green-400" /> 需求已确认，可 Copy 交给 Coding Agent
+        <Check className="size-4 text-green-600 dark:text-green-400" /> {t('chat.confirmedBanner')}
       </div>
     );
   }

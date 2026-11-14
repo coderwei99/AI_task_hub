@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { aiSettingsSchema } from '@ai-task-hub/shared';
+import { useTranslation } from 'react-i18next';
+import { aiSettingsSchema, parseWithLocale } from '@ai-task-hub/shared';
+import { currentLocale } from '@/i18n';
 import { useSettings, useTestConnection, useUpdateSettings, type TestConnectionResult } from '@/api/hooks';
 import { PageError } from '@/components/PageError';
 import { Button } from '@/components/ui/button';
@@ -10,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const { data: settings, isPending, error: loadError, refetch } = useSettings();
   const updateSettings = useUpdateSettings();
   const testConnection = useTestConnection();
@@ -29,9 +32,9 @@ export default function SettingsPage() {
   }, [settings]);
 
   function validate() {
-    const parsed = aiSettingsSchema.safeParse({ baseUrl, apiKey, model });
+    const parsed = parseWithLocale(aiSettingsSchema, { baseUrl, apiKey, model }, currentLocale());
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? '参数错误');
+      setError(parsed.message);
       return null;
     }
     setError('');
@@ -43,9 +46,9 @@ export default function SettingsPage() {
     if (!data) return;
     try {
       await updateSettings.mutateAsync(data);
-      toast.success('配置已保存');
+      toast.success(t('settings.saved'));
     } catch (e) {
-      setError(e instanceof Error ? e.message : '保存失败');
+      setError(e instanceof Error ? e.message : t('common.saveFailed'));
     }
   }
 
@@ -57,24 +60,24 @@ export default function SettingsPage() {
       const result = await testConnection.mutateAsync(data);
       setTestResult(result);
     } catch (e) {
-      setTestResult({ ok: false, latencyMs: 0, error: e instanceof Error ? e.message : '测试失败' });
+      setTestResult({ ok: false, latencyMs: 0, error: e instanceof Error ? e.message : t('settings.testFailed') });
     }
   }
 
   return (
     <div className="max-w-2xl p-6">
-      <h1 className="mb-4 text-xl font-semibold">设置</h1>
+      <h1 className="mb-4 text-xl font-semibold">{t('settings.title')}</h1>
 
       <Card className="p-5">
-        <h2 className="text-base font-semibold">AI 模型配置</h2>
+        <h2 className="text-base font-semibold">{t('settings.aiTitle')}</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          兼容 OpenAI Chat Completions 接口。需求内容会发送到你配置的 AI 服务，请使用你信任的服务商。
+          {t('settings.aiDesc')}
         </p>
 
         {isPending ? (
-          <p className="mt-4 text-sm text-muted-foreground">加载中…</p>
+          <p className="mt-4 text-sm text-muted-foreground">{t('common.loading')}</p>
         ) : loadError ? (
-          <PageError message="配置加载失败" onRetry={() => refetch()} />
+          <PageError message={t('settings.loadFailed')} onRetry={() => refetch()} />
         ) : (
           <div className="mt-4 space-y-4">
             <div className="space-y-2">
@@ -96,10 +99,10 @@ export default function SettingsPage() {
                 placeholder="sk-…"
                 autoComplete="off"
               />
-              <p className="text-xs text-muted-foreground">仅保存在本地 SQLite，不会上传到任何第三方。</p>
+              <p className="text-xs text-muted-foreground">{t('settings.apiKeyHint')}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="model">模型</Label>
+              <Label htmlFor="model">{t('settings.model')}</Label>
               <Input id="model" value={model} onChange={(e) => setModel(e.target.value)} placeholder="gpt-4o-mini" />
             </div>
 
@@ -115,7 +118,9 @@ export default function SettingsPage() {
                 }
               >
                 {testResult.ok ? <CheckCircle2 className="size-4" /> : <XCircle className="size-4" />}
-                {testResult.ok ? `连接成功 · ${testResult.latencyMs}ms` : `连接失败：${testResult.error ?? '未知错误'}`}
+                {testResult.ok
+                  ? t('settings.testOk', { ms: testResult.latencyMs })
+                  : t('settings.testError', { error: testResult.error ?? t('settings.unknownError') })}
               </div>
             )}
 
@@ -123,14 +128,14 @@ export default function SettingsPage() {
               <Button variant="outline" onClick={handleTest} disabled={testConnection.isPending}>
                 {testConnection.isPending ? (
                   <>
-                    <Loader2 className="animate-spin" /> 测试中…
+                    <Loader2 className="animate-spin" /> {t('settings.testing')}
                   </>
                 ) : (
-                  '测试连接'
+                  t('settings.test')
                 )}
               </Button>
               <Button onClick={handleSave} disabled={updateSettings.isPending}>
-                {updateSettings.isPending ? '保存中…' : '保存'}
+                {updateSettings.isPending ? t('common.saving') : t('common.save')}
               </Button>
             </div>
           </div>
@@ -138,12 +143,13 @@ export default function SettingsPage() {
       </Card>
 
       <Card className="mt-4 p-5">
-        <h2 className="text-base font-semibold">数据</h2>
+        <h2 className="text-base font-semibold">{t('settings.dataTitle')}</h2>
         <div className="mt-3 space-y-1.5 text-sm text-muted-foreground">
           <p>
-            数据库位置：<code className="rounded bg-muted px-1.5 py-0.5 text-xs">~/.ai-task-hub/data.db</code>
+            {t('settings.dbLocation')}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">~/.ai-task-hub/data.db</code>
           </p>
-          <p>备份方式：复制上述文件即可。</p>
+          <p>{t('settings.backup')}</p>
         </div>
       </Card>
     </div>

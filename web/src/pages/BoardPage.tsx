@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ArrowLeft, Copy, Pencil, Plus } from 'lucide-react';
-import {
-  EXECUTION_STATUSES,
-  EXECUTION_STATUS_LABELS,
-  REQUIREMENT_STATUSES,
-  REQUIREMENT_STATUS_LABELS,
-  type Todo,
-} from '@ai-task-hub/shared';
+import { useTranslation } from 'react-i18next';
+import { EXECUTION_STATUSES, REQUIREMENT_STATUSES, type Todo } from '@ai-task-hub/shared';
 import { useProject, useTodos, useMoveTodo } from '@/api/hooks';
 import { ApiClientError } from '@/api/client';
 import { BoardColumns } from '@/components/BoardColumns';
@@ -26,6 +21,7 @@ const VIEW_KEY = 'ath.board.view';
 const SHOW_DONE_KEY = 'ath.board.showDone';
 
 export default function BoardPage() {
+  const { t } = useTranslation();
   const { projectId = '' } = useParams();
   const navigate = useNavigate();
   const { data: project, isPending, error, refetch } = useProject(projectId);
@@ -51,22 +47,22 @@ export default function BoardPage() {
   }
 
   if (isPending) {
-    return <div className="p-6 text-sm text-muted-foreground">加载中…</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{t('common.loading')}</div>;
   }
   if (error || !project) {
     const isNotFound = error instanceof ApiClientError && error.status === 404;
     return (
       <div className="flex flex-col items-center gap-3 p-20 text-center">
-        <p className="text-muted-foreground">{isNotFound ? '项目不存在或已被删除' : '项目加载失败'}</p>
+        <p className="text-muted-foreground">{isNotFound ? t('board.notFound') : t('board.loadFailed')}</p>
         <div className="flex items-center gap-2">
           {!isNotFound && (
             <Button variant="outline" onClick={() => refetch()}>
-              重试
+              {t('common.retry')}
             </Button>
           )}
           <Button variant="outline" asChild>
             <Link to="/projects">
-              <ArrowLeft /> 返回项目列表
+              <ArrowLeft /> {t('board.backToProjects')}
             </Link>
           </Button>
         </div>
@@ -80,12 +76,12 @@ export default function BoardPage() {
     view === 'requirement'
       ? REQUIREMENT_STATUSES.map((s) => ({
           key: s,
-          label: REQUIREMENT_STATUS_LABELS[s],
+          label: t(`requirementStatus.${s}`),
           items: visible.filter((t) => t.requirementStatus === s),
         }))
       : EXECUTION_STATUSES.map((s) => ({
           key: s,
-          label: EXECUTION_STATUS_LABELS[s],
+          label: t(`executionStatus.${s}`),
           items: visible.filter((t) => t.executionStatus === s),
         }));
 
@@ -113,20 +109,20 @@ export default function BoardPage() {
               <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{project.description}</p>
             )}
             <p className="mt-1 text-xs text-muted-foreground">
-              待打磨 {pendingCount} · 打磨中 {polishingCount} · 已确认 {confirmedCount}
+              {t('board.summary', { pending: pendingCount, polishing: polishingCount, confirmed: confirmedCount })}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button
               variant="outline"
               disabled={confirmedCount === 0 || copyPending}
-              title={confirmedCount === 0 ? '暂无已确认任务' : '复制项目全部已确认 Todo'}
+              title={confirmedCount === 0 ? t('board.noConfirmed') : t('board.copyProjectHint')}
               onClick={() => copy(`/projects/${projectId}/export`)}
             >
-              <Copy /> Copy 项目
+              <Copy /> {t('board.copyProject')}
             </Button>
             <Button onClick={() => setCreateOpen(true)}>
-              <Plus /> 新建 Todo
+              <Plus /> {t('board.newTodo')}
             </Button>
           </div>
         </div>
@@ -134,14 +130,14 @@ export default function BoardPage() {
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
           <Tabs value={view} onValueChange={changeView}>
             <TabsList>
-              <TabsTrigger value="requirement">需求状态</TabsTrigger>
-              <TabsTrigger value="execution">执行状态</TabsTrigger>
+              <TabsTrigger value="requirement">{t('board.viewRequirement')}</TabsTrigger>
+              <TabsTrigger value="execution">{t('board.viewExecution')}</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="flex items-center gap-2">
             <Switch id="show-done" checked={showDone} onCheckedChange={changeShowDone} />
             <Label htmlFor="show-done" className="text-sm text-muted-foreground">
-              显示已完成
+              {t('board.showDone')}
             </Label>
           </div>
         </div>
@@ -149,9 +145,9 @@ export default function BoardPage() {
 
       {all.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-          <p className="text-muted-foreground">还没有 Todo</p>
+          <p className="text-muted-foreground">{t('board.empty')}</p>
           <Button onClick={() => setCreateOpen(true)}>
-            <Plus /> 新建第一个 Todo
+            <Plus /> {t('board.createFirst')}
           </Button>
         </div>
       ) : (

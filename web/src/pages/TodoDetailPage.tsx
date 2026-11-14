@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ArrowLeft, Check, Copy, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import {
   EXECUTION_STATUSES,
-  EXECUTION_STATUS_LABELS,
   PRIORITIES,
-  PRIORITY_LABELS,
   canConfirm,
   formatTodoNumber,
   type ExecutionStatus,
@@ -52,6 +51,7 @@ import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
 import { useMediaQuery } from '@/lib/useMediaQuery';
 
 export default function TodoDetailPage() {
+  const { t } = useTranslation();
   const { projectId = '', todoId = '' } = useParams();
   const navigate = useNavigate();
   const { data: todo, isPending, error, refetch } = useTodo(todoId);
@@ -81,17 +81,17 @@ export default function TodoDetailPage() {
     try {
       await updateTodo.mutateAsync({ id: todo.id, input: { title: next } });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '标题保存失败');
+      toast.error(e instanceof Error ? e.message : t('todo.titleSaveFailed'));
     }
   }
   async function confirmDelete() {
     if (!todo) return;
     try {
       await deleteTodo.mutateAsync(todo.id);
-      toast.success('Todo 已删除');
+      toast.success(t('todo.deleted'));
       navigate(`/projects/${projectId}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '删除失败');
+      toast.error(e instanceof Error ? e.message : t('common.deleteFailed'));
     }
   }
   function handleConfirm() {
@@ -102,29 +102,29 @@ export default function TodoDetailPage() {
     try {
       await confirmTodo.mutateAsync(todo.id);
       setConfirmOpen(false);
-      toast.success('需求已确认');
+      toast.success(t('todo.confirmed'));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : '确认失败');
+      toast.error(e instanceof Error ? e.message : t('todo.confirmFailed'));
     }
   }
 
   if (isPending) {
-    return <div className="p-6 text-sm text-muted-foreground">加载中…</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{t('common.loading')}</div>;
   }
   if (error || !todo) {
     const isNotFound = error instanceof ApiClientError && error.status === 404;
     return (
       <div className="flex flex-col items-center gap-3 p-20 text-center">
-        <p className="text-muted-foreground">{isNotFound ? 'Todo 不存在或已被删除' : 'Todo 加载失败'}</p>
+        <p className="text-muted-foreground">{isNotFound ? t('todo.notFound') : t('todo.loadFailed')}</p>
         <div className="flex items-center gap-2">
           {!isNotFound && (
             <Button variant="outline" onClick={() => refetch()}>
-              重试
+              {t('common.retry')}
             </Button>
           )}
           <Button variant="outline" asChild>
             <Link to={`/projects/${projectId}`}>
-              <ArrowLeft /> 返回看板
+              <ArrowLeft /> {t('todo.backToBoard')}
             </Link>
           </Button>
         </div>
@@ -141,7 +141,7 @@ export default function TodoDetailPage() {
           <div className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
             <Link to={`/projects/${projectId}`} className="flex items-center gap-1 hover:text-foreground">
               {project && <ProjectIcon icon={project.icon} color={project.color} size="sm" />}
-              <span className="truncate">{project?.name ?? '项目'}</span>
+              <span className="truncate">{project?.name ?? t('todo.projectFallback')}</span>
             </Link>
             <span>/</span>
             <span className="font-mono">{formatTodoNumber(todo.number)}</span>
@@ -152,10 +152,10 @@ export default function TodoDetailPage() {
             </Button>
             <Button
               disabled={!confirmable}
-              title={confirmable ? '确认需求' : 'AI 完成分析后可确认'}
+              title={confirmable ? t('todo.confirm') : t('todo.confirmDisabledHint')}
               onClick={handleConfirm}
             >
-              <Check /> 确认需求
+              <Check /> {t('todo.confirm')}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -165,7 +165,7 @@ export default function TodoDetailPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem className="text-destructive" onClick={() => setDeleteOpen(true)}>
-                  删除 Todo
+                  {t('todo.delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -188,7 +188,7 @@ export default function TodoDetailPage() {
           <h1
             className="mt-2 cursor-text truncate text-lg font-semibold hover:bg-accent/50 rounded px-1 -mx-1"
             onClick={startEditTitle}
-            title="点击编辑标题"
+            title={t('todo.editTitleHint')}
           >
             {todo.title}
           </h1>
@@ -197,7 +197,7 @@ export default function TodoDetailPage() {
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <RequirementBadge status={todo.requirementStatus} />
           <div className="flex items-center gap-1.5 text-sm">
-            <span className="text-muted-foreground">执行状态</span>
+            <span className="text-muted-foreground">{t('todo.executionStatus')}</span>
             <Select
               value={todo.executionStatus}
               onValueChange={(v) => updateTodo.mutate({ id: todo.id, input: { executionStatus: v as ExecutionStatus } })}
@@ -208,14 +208,14 @@ export default function TodoDetailPage() {
               <SelectContent>
                 {EXECUTION_STATUSES.map((s) => (
                   <SelectItem key={s} value={s}>
-                    {EXECUTION_STATUS_LABELS[s]}
+                    {t(`executionStatus.${s}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
-            <span className="text-muted-foreground">优先级</span>
+            <span className="text-muted-foreground">{t('todo.priority')}</span>
             <Select
               value={todo.priority}
               onValueChange={(v) => updateTodo.mutate({ id: todo.id, input: { priority: v as Priority } })}
@@ -226,7 +226,7 @@ export default function TodoDetailPage() {
               <SelectContent>
                 {PRIORITIES.map((p) => (
                   <SelectItem key={p} value={p}>
-                    {PRIORITY_LABELS[p]}
+                    {t(`priority.${p}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -239,9 +239,9 @@ export default function TodoDetailPage() {
         <Tabs defaultValue="chat" className="flex min-h-0 flex-1 flex-col gap-0">
           <div className="border-b px-4 pt-2">
             <TabsList variant="line" className="w-full">
-              <TabsTrigger value="chat">对话</TabsTrigger>
-              <TabsTrigger value="doc">需求文档</TabsTrigger>
-              <TabsTrigger value="activity">活动记录</TabsTrigger>
+              <TabsTrigger value="chat">{t('todo.tabChat')}</TabsTrigger>
+              <TabsTrigger value="doc">{t('todo.tabDoc')}</TabsTrigger>
+              <TabsTrigger value="activity">{t('todo.tabActivity')}</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="chat" className="flex min-h-0 flex-1 flex-col">
@@ -262,8 +262,8 @@ export default function TodoDetailPage() {
             <Tabs defaultValue="doc" className="flex min-h-0 flex-1 flex-col gap-0">
               <div className="border-b px-4 pt-2">
                 <TabsList variant="line">
-                  <TabsTrigger value="doc">需求文档</TabsTrigger>
-                  <TabsTrigger value="activity">活动记录</TabsTrigger>
+                  <TabsTrigger value="doc">{t('todo.tabDoc')}</TabsTrigger>
+                  <TabsTrigger value="activity">{t('todo.tabActivity')}</TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="doc" className="flex min-h-0 flex-1 flex-col">
@@ -280,13 +280,13 @@ export default function TodoDetailPage() {
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>删除「{todo.title}」？</AlertDialogTitle>
-            <AlertDialogDescription>将同时删除该 Todo 的对话与活动记录，此操作不可撤销。</AlertDialogDescription>
+            <AlertDialogTitle>{t('todo.deleteTitle', { title: todo.title })}</AlertDialogTitle>
+            <AlertDialogDescription>{t('todo.deleteDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={confirmDelete}>
-              删除
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -295,24 +295,24 @@ export default function TodoDetailPage() {
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>确认需求</DialogTitle>
+            <DialogTitle>{t('todo.confirmDialogTitle')}</DialogTitle>
             <DialogDescription>
-              确认后「{todo.title}」将标记为已确认，可 Copy 交给 Coding Agent。请核对以下需求文档摘要。
+              {t('todo.confirmDialogDesc', { title: todo.title })}
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-60 overflow-y-auto rounded-md border bg-muted/30 p-3">
             {todo.requirementDoc ? (
               <Markdown content={todo.requirementDoc} className="text-sm" />
             ) : (
-              <p className="text-sm text-muted-foreground">暂无文档内容</p>
+              <p className="text-sm text-muted-foreground">{t('todo.noDoc')}</p>
             )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              取消
+              {t('common.cancel')}
             </Button>
             <Button onClick={doConfirm} disabled={confirmTodo.isPending}>
-              <Check /> 确认
+              <Check /> {t('todo.confirmAction')}
             </Button>
           </DialogFooter>
         </DialogContent>
