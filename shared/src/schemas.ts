@@ -1,18 +1,21 @@
 import { z } from 'zod';
+import type { ErrorKey } from './i18n';
 import { EXECUTION_STATUSES, LUCIDE_ICON_PREFIX, PRIORITIES, PROJECT_COLORS } from './types';
+
+const msg = (key: ErrorKey) => key;
 
 const projectIconSchema = z
   .string()
   .trim()
-  .min(1, '请选择图标')
+  .min(1, msg('iconRequired'))
   .max(80)
   .refine(
     (v) => (v.startsWith(LUCIDE_ICON_PREFIX) ? /^lucide:[a-z0-9-]+$/.test(v) : v.length <= 16),
-    '图标格式不正确',
+    msg('iconInvalid'),
   );
 
 const projectFields = {
-  name: z.string().trim().min(1, '项目名称不能为空').max(100),
+  name: z.string().trim().min(1, msg('projectNameRequired')).max(100),
   icon: projectIconSchema,
   color: z.enum(PROJECT_COLORS),
   description: z.string().max(2000),
@@ -35,8 +38,8 @@ export const updateProjectSchema = z.object(projectFields).partial();
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 
 export const createTodoSchema = z.object({
-  title: z.string().trim().min(1, '标题不能为空').max(200),
-  originalDescription: z.string().trim().min(1, '原始描述不能为空').max(20000),
+  title: z.string().trim().min(1, msg('titleRequired')).max(200),
+  originalDescription: z.string().trim().min(1, msg('descriptionRequired')).max(20000),
   priority: z.enum(PRIORITIES).default('medium'),
 });
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;
@@ -50,7 +53,7 @@ export const updateTodoSchema = z.object({
 export type UpdateTodoInput = z.infer<typeof updateTodoSchema>;
 
 export const chatInputSchema = z.object({
-  content: z.string().trim().min(1, '消息不能为空').max(20000),
+  content: z.string().trim().min(1, msg('messageRequired')).max(20000),
 });
 export type ChatInput = z.infer<typeof chatInputSchema>;
 
