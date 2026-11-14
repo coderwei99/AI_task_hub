@@ -252,7 +252,7 @@ function StatusBanner({
   if (status === 'confirmed') {
     return (
       <div className="flex items-center gap-2 border-t bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
-        <Check className="size-4 text-green-600" /> 需求已确认，可 Copy 交给 Coding Agent
+        <Check className="size-4 text-green-600 dark:text-green-400" /> 需求已确认，可 Copy 交给 Coding Agent
       </div>
     );
   }

@@ -59,13 +59,13 @@ export function ActivityTimeline({ activities }: { activities: Activity[] }) {
             <span
               className={cn(
                 'z-10 flex size-7 shrink-0 items-center justify-center rounded-full border bg-background',
-                highlight ? 'border-green-300 text-green-600' : 'text-muted-foreground',
+                highlight ? 'border-green-300 text-green-600 dark:border-green-500/40 dark:text-green-400' : 'text-muted-foreground',
               )}
             >
               {icon}
             </span>
             <div className="min-w-0 flex-1 pt-0.5">
-              <p className={cn('text-sm', highlight && 'font-medium text-green-700')}>{text}</p>
+              <p className={cn('text-sm', highlight && 'font-medium text-green-700 dark:text-green-400')}>{text}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">{relativeTime(a.createdAt)}</p>
             </div>
           </li>

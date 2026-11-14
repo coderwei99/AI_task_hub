@@ -109,7 +109,9 @@ export default function SettingsPage() {
               <div
                 className={
                   'flex items-center gap-2 rounded-md border px-3 py-2 text-sm ' +
-                  (testResult.ok ? 'border-green-200 bg-green-50 text-green-700' : 'border-red-200 bg-red-50 text-red-700')
+                  (testResult.ok
+                    ? 'border-green-200 bg-green-50 text-green-700 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-300'
+                    : 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300')
                 }
               >
                 {testResult.ok ? <CheckCircle2 className="size-4" /> : <XCircle className="size-4" />}
