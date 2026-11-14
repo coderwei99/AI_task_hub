@@ -12,7 +12,7 @@ import { resolveAssistantOutput } from '../ai/parser';
 import { buildMessages } from '../ai/prompt';
 import { db } from '../db';
 import { messages, projects, todos } from '../db/schema';
-import { notFound } from '../lib/errors';
+import { LocalizedError, notFound } from '../lib/errors';
 import { logActivity } from './activities';
 
 const UPSTREAM_IDLE_TIMEOUT_MS = 120_000;
@@ -29,9 +29,9 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
   const { todoId, content, cfg, signal, onDelta } = opts;
 
   const todo = db.select().from(todos).where(eq(todos.id, todoId)).get();
-  if (!todo) throw notFound('Todo 不存在');
+  if (!todo) throw notFound('todoNotFound');
   const project = db.select().from(projects).where(eq(projects.id, todo.projectId)).get();
-  if (!project) throw notFound('项目不存在');
+  if (!project) throw notFound('projectNotFound');
 
   const history = db.transaction((tx) => {
     const userMessage: Message = { id: nanoid(), todoId, role: 'user', content, createdAt: Date.now() };
@@ -58,7 +58,7 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
 
   const resolved = await resolveAssistantOutput(cfg, history, text, finishReason, { signal });
 
-  if (signal.aborted) throw new Error('对话已中断');
+  if (signal.aborted) throw new LocalizedError('chatAborted');
 
   return db.transaction((tx) => {
     const assistantMessage: Message = {

@@ -1,4 +1,5 @@
-import type { AiSettings } from '@ai-task-hub/shared';
+import { DEFAULT_LOCALE, type AiSettings, type Locale } from '@ai-task-hub/shared';
+import { LocalizedError, localizeError } from '../lib/errors';
 import type { ChatMessage } from './prompt';
 
 export interface TestConnectionResult {
@@ -18,7 +19,7 @@ function headers(cfg: AiSettings): Record<string, string> {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.apiKey}` };
 }
 
-export async function testConnection(cfg: AiSettings): Promise<TestConnectionResult> {
+export async function testConnection(cfg: AiSettings, locale: Locale = DEFAULT_LOCALE): Promise<TestConnectionResult> {
   const start = Date.now();
   try {
     const res = await fetch(`${cfg.baseUrl.replace(/\/+$/, '')}/chat/completions`, {
@@ -42,7 +43,7 @@ export async function testConnection(cfg: AiSettings): Promise<TestConnectionRes
     }
     return { ok: true, latencyMs };
   } catch (e) {
-    return { ok: false, latencyMs: Date.now() - start, error: e instanceof Error ? e.message : '连接失败' };
+    return { ok: false, latencyMs: Date.now() - start, error: localizeError(e, locale, 'connectionFailed') };
   }
 }
 
@@ -84,7 +85,7 @@ export async function streamChatCompletion(
     });
     if (!res.ok || !res.body) {
       const text = await res.text().catch(() => '');
-      throw new Error(`AI 服务返回 HTTP ${res.status}: ${text.slice(0, 200)}`);
+      throw new LocalizedError('aiHttpError', { status: res.status, body: text.slice(0, 200) });
     }
 
     const reader = res.body.getReader();
@@ -121,7 +122,7 @@ export async function streamChatCompletion(
 
     return { text: full, finishReason };
   } catch (e) {
-    if (timedOut) throw new Error(`AI 响应超时（${Math.round((opts.idleTimeoutMs ?? 0) / 1000)}s 无数据）`);
+    if (timedOut) throw new LocalizedError('aiTimeout', { seconds: Math.round((opts.idleTimeoutMs ?? 0) / 1000) });
     throw e;
   } finally {
     if (timer) clearTimeout(timer);
@@ -149,10 +150,10 @@ export async function jsonChatCompletion(
   });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
-    throw new Error(`AI 服务返回 HTTP ${res.status}: ${text.slice(0, 200)}`);
+    throw new LocalizedError('aiHttpError', { status: res.status, body: text.slice(0, 200) });
   }
   const json = (await res.json()) as { choices?: { message?: { content?: unknown } }[] };
   const content = json.choices?.[0]?.message?.content;
-  if (typeof content !== 'string') throw new Error('AI 未返回有效内容');
+  if (typeof content !== 'string') throw new LocalizedError('aiEmptyContent');
   return content;
 }

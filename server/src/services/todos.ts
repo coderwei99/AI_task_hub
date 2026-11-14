@@ -14,14 +14,14 @@ import { logActivity } from './activities';
 
 export function getTodoOrThrow(id: string): Todo {
   const todo = db.select().from(todos).where(eq(todos.id, id)).get();
-  if (!todo) throw notFound('Todo 不存在');
+  if (!todo) throw notFound('todoNotFound');
   return todo;
 }
 
 export function createTodo(projectId: string, input: CreateTodoInput): Todo {
   return db.transaction((tx) => {
     const project = tx.select().from(projects).where(eq(projects.id, projectId)).get();
-    if (!project) throw notFound('项目不存在');
+    if (!project) throw notFound('projectNotFound');
 
     const number = project.todoSeq + 1;
     const now = Date.now();
@@ -50,7 +50,7 @@ export function createTodo(projectId: string, input: CreateTodoInput): Todo {
 export function patchTodo(id: string, input: UpdateTodoInput): Todo {
   return db.transaction((tx) => {
     const existing = tx.select().from(todos).where(eq(todos.id, id)).get();
-    if (!existing) throw notFound('Todo 不存在');
+    if (!existing) throw notFound('todoNotFound');
 
     const updates: Partial<Todo> = { updatedAt: Date.now() };
 
@@ -85,9 +85,9 @@ export function patchTodo(id: string, input: UpdateTodoInput): Todo {
 export function confirmTodo(id: string): Todo {
   return db.transaction((tx) => {
     const existing = tx.select().from(todos).where(eq(todos.id, id)).get();
-    if (!existing) throw notFound('Todo 不存在');
+    if (!existing) throw notFound('todoNotFound');
     if (!canConfirm(existing.requirementStatus)) {
-      throw conflict('当前需求状态不可确认，请等待 AI 完成分析');
+      throw conflict('todoNotConfirmable');
     }
     const now = Date.now();
     const nextStatus = nextRequirementStatus(existing.requirementStatus, 'user_confirm');

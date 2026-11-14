@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { aiSettingsSchema } from '@ai-task-hub/shared';
 import { testConnection } from '../ai/client';
+import { requestLocale } from '../lib/errors';
 import { parseBody } from '../lib/validate';
 import { readSettings, writeSettings } from '../services/settings';
 
@@ -16,5 +17,5 @@ settingsRoutes.put('/', async (c) => {
 
 settingsRoutes.post('/test', async (c) => {
   const input = await parseBody(c, aiSettingsSchema);
-  return c.json(await testConnection(input));
+  return c.json(await testConnection(input, requestLocale(c)));
 });

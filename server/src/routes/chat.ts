@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import { chatInputSchema } from '@ai-task-hub/shared';
-import { badRequest, conflict } from '../lib/errors';
+import { badRequest, conflict, localizeError, requestLocale } from '../lib/errors';
 import { parseBody } from '../lib/validate';
 import { runChatTurn } from '../services/chat';
 import { isAiConfigured, readSettings } from '../services/settings';
@@ -13,12 +13,13 @@ const activeChats = new Map<string, AbortController>();
 
 chatRoutes.post('/:id/chat', async (c) => {
   const id = c.req.param('id');
+  const locale = requestLocale(c);
   const input = await parseBody(c, chatInputSchema);
   getTodoOrThrow(id);
 
   const cfg = readSettings();
-  if (!isAiConfigured(cfg)) throw badRequest('请先在设置页配置 AI 服务（Base URL / API Key / 模型）');
-  if (activeChats.has(id)) throw conflict('该 Todo 已有进行中的对话，请等待完成或停止后重试');
+  if (!isAiConfigured(cfg)) throw badRequest('aiNotConfigured');
+  if (activeChats.has(id)) throw conflict('chatInProgress');
 
   const controller = new AbortController();
   activeChats.set(id, controller);
@@ -43,7 +44,7 @@ chatRoutes.post('/:id/chat', async (c) => {
       if (!controller.signal.aborted) {
         await stream.writeSSE({
           event: 'error',
-          data: JSON.stringify({ message: e instanceof Error ? e.message : 'AI 调用失败' }),
+          data: JSON.stringify({ message: localizeError(e, locale, 'aiCallFailed') }),
         });
       }
     } finally {

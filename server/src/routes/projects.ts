@@ -44,7 +44,7 @@ projectRoutes.post('/', async (c) => {
 
 projectRoutes.get('/:id', (c) => {
   const project = db.select().from(projects).where(eq(projects.id, c.req.param('id'))).get();
-  if (!project) throw notFound('项目不存在');
+  if (!project) throw notFound('projectNotFound');
   return c.json({ ...project, stats: statsFor(project.id) });
 });
 
@@ -55,7 +55,7 @@ projectRoutes.get('/:id/export', (c) =>
 projectRoutes.patch('/:id', async (c) => {
   const id = c.req.param('id');
   const existing = db.select().from(projects).where(eq(projects.id, id)).get();
-  if (!existing) throw notFound('项目不存在');
+  if (!existing) throw notFound('projectNotFound');
   const input = await parseBody(c, updateProjectSchema);
   db.update(projects).set({ ...input, updatedAt: Date.now() }).where(eq(projects.id, id)).run();
   const project = db.select().from(projects).where(eq(projects.id, id)).get()!;
@@ -65,7 +65,7 @@ projectRoutes.patch('/:id', async (c) => {
 projectRoutes.delete('/:id', (c) => {
   const id = c.req.param('id');
   const existing = db.select().from(projects).where(eq(projects.id, id)).get();
-  if (!existing) throw notFound('项目不存在');
+  if (!existing) throw notFound('projectNotFound');
   db.delete(projects).where(eq(projects.id, id)).run();
   return c.json({ ok: true });
 });

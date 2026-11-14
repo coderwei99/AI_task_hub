@@ -8,19 +8,19 @@ import { getTodoOrThrow } from './todos';
 export function exportTodoMarkdown(id: string): string {
   const todo = getTodoOrThrow(id);
   const project = db.select().from(projects).where(eq(projects.id, todo.projectId)).get();
-  if (!project) throw notFound('项目不存在');
+  if (!project) throw notFound('projectNotFound');
   return renderTodoMarkdown(todo, project, Date.now());
 }
 
 export function exportProjectMarkdown(id: string): string {
   const project = db.select().from(projects).where(eq(projects.id, id)).get();
-  if (!project) throw notFound('项目不存在');
+  if (!project) throw notFound('projectNotFound');
   const confirmed = db
     .select()
     .from(todos)
     .where(eq(todos.projectId, id))
     .all()
     .filter((t) => t.requirementStatus === 'confirmed');
-  if (confirmed.length === 0) throw conflict('暂无已确认任务');
+  if (confirmed.length === 0) throw conflict('noConfirmedTasks');
   return renderProjectMarkdown(project, confirmed, Date.now());
 }
