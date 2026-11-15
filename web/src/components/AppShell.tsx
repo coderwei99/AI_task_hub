@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { FolderKanban, ListTodo, Menu, Settings } from 'lucide-react';
-import { NavLink, Outlet } from 'react-router';
+import { FolderKanban, HardDrive, ListTodo, Menu, Settings } from 'lucide-react';
+import { Link, NavLink, Outlet } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { useStorageInfo } from '@/api/hooks';
 import { useMediaQuery } from '@/lib/useMediaQuery';
 import { cn } from '@/lib/utils';
 
@@ -48,6 +49,22 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+function StorageHint({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useTranslation();
+  const { data: storage } = useStorageInfo();
+  return (
+    <Link
+      to="/settings"
+      onClick={onNavigate}
+      title={storage ? t('nav.storageHint', { path: storage.dataDir }) : undefined}
+      className="flex min-w-0 items-center gap-1.5 hover:text-foreground"
+    >
+      <HardDrive className="size-3.5 shrink-0" />
+      <span className="truncate">{t('nav.footer')}</span>
+    </Link>
+  );
+}
+
 export default function AppShell() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -71,7 +88,7 @@ export default function AppShell() {
         <Brand />
         <NavLinks />
         <div className="flex items-center justify-between border-t py-2 pr-2 pl-3 text-xs text-muted-foreground">
-          <span>{t('nav.footer')}</span>
+          <StorageHint />
           <div className="flex items-center">
             <LanguageToggle />
             <ThemeToggle />
@@ -84,7 +101,9 @@ export default function AppShell() {
           <SheetTitle className="sr-only">{t('nav.title')}</SheetTitle>
           <Brand />
           <NavLinks onNavigate={() => setOpen(false)} />
-          <div className="mt-auto border-t p-3 text-xs text-muted-foreground">{t('nav.footer')}</div>
+          <div className="mt-auto border-t p-3 text-xs text-muted-foreground">
+            <StorageHint onNavigate={() => setOpen(false)} />
+          </div>
         </SheetContent>
       </Sheet>
 

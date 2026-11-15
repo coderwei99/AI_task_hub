@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
+import { CheckCircle2, Copy, HardDrive, Loader2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { aiSettingsSchema, parseWithLocale } from '@ai-task-hub/shared';
 import { currentLocale } from '@/i18n';
-import { useSettings, useTestConnection, useUpdateSettings, type TestConnectionResult } from '@/api/hooks';
+import {
+  useSettings,
+  useStorageInfo,
+  useTestConnection,
+  useUpdateSettings,
+  type TestConnectionResult,
+} from '@/api/hooks';
 import { PageError } from '@/components/PageError';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -142,16 +148,63 @@ export default function SettingsPage() {
         )}
       </Card>
 
-      <Card className="mt-4 p-5">
-        <h2 className="text-base font-semibold">{t('settings.dataTitle')}</h2>
-        <div className="mt-3 space-y-1.5 text-sm text-muted-foreground">
-          <p>
-            {t('settings.dbLocation')}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">~/.ai-task-hub/data.db</code>
-          </p>
-          <p>{t('settings.backup')}</p>
-        </div>
-      </Card>
+      <StorageCard />
     </div>
+  );
+}
+
+function StorageCard() {
+  const { t } = useTranslation();
+  const { data: storage } = useStorageInfo();
+
+  async function copyPath(path: string) {
+    try {
+      await navigator.clipboard.writeText(path);
+      toast.success(t('settings.pathCopied'));
+    } catch {
+      toast.error(t('copy.failed'));
+    }
+  }
+
+  const rows = storage
+    ? [
+        { label: t('settings.dataDir'), path: storage.dataDir },
+        { label: t('settings.dbFile'), path: storage.dbPath },
+      ]
+    : [];
+
+  return (
+    <Card className="mt-4 p-5">
+      <h2 className="flex items-center gap-2 text-base font-semibold">
+        <HardDrive className="size-4" /> {t('settings.dataTitle')}
+      </h2>
+      <p className="mt-1 text-xs text-muted-foreground">{t('settings.dataDesc')}</p>
+      <div className="mt-4 space-y-3">
+        {rows.map(({ label, path }) => (
+          <div key={label} className="space-y-1.5">
+            <p className="text-sm font-medium">{label}</p>
+            <div className="flex items-center gap-2">
+              <code className="min-w-0 flex-1 truncate rounded bg-muted px-2 py-1.5 text-xs" title={path}>
+                {path}
+              </code>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 shrink-0"
+                aria-label={t('settings.copyPath')}
+                title={t('settings.copyPath')}
+                onClick={() => copyPath(path)}
+              >
+                <Copy />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 space-y-1 text-xs text-muted-foreground">
+        <p>{t('settings.backup')}</p>
+        <p>{t('settings.envHint')}</p>
+      </div>
+    </Card>
   );
 }

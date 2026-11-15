@@ -10,6 +10,7 @@ import type {
   Message,
   Project,
   ProjectWithStats,
+  StorageInfo,
   TaskWithProject,
   Todo,
   UpdateProjectInput,
@@ -26,6 +27,7 @@ export const queryKeys = {
   messages: (id: string) => ['messages', id] as const,
   tasks: ['tasks'] as const,
   settings: ['settings'] as const,
+  storage: ['storage'] as const,
 };
 
 function useInvalidateTodoRelated() {
@@ -191,6 +193,14 @@ export function useSettings() {
   return useQuery({
     queryKey: queryKeys.settings,
     queryFn: () => api.get<AiSettings>('/settings'),
+  });
+}
+
+export function useStorageInfo() {
+  return useQuery({
+    queryKey: queryKeys.storage,
+    queryFn: () => api.get<StorageInfo>('/settings/storage'),
+    staleTime: Infinity,
   });
 }
 
