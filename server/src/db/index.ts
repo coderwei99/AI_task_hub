@@ -7,7 +7,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from './schema';
 
-const dataDir = process.env.AI_TASK_HUB_DATA_DIR ?? join(homedir(), '.ai-task-hub');
+export const dataDir = process.env.AI_TASK_HUB_DATA_DIR ?? join(homedir(), '.ai-task-hub');
 mkdirSync(dataDir, { recursive: true });
 
 export const dbPath = join(dataDir, 'data.db');

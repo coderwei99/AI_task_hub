@@ -105,6 +105,11 @@ export interface AiSettings {
   model: string;
 }
 
+export interface StorageInfo {
+  dataDir: string;
+  dbPath: string;
+}
+
 export interface ChatDoneEvent {
   assistantMessageId: string;
   sufficient: boolean | null;
