@@ -9,7 +9,7 @@ import {
 } from '@ai-task-hub/shared';
 import { streamChatCompletion } from '../ai/client';
 import { resolveAssistantOutput } from '../ai/parser';
-import { buildMessages } from '../ai/prompt';
+import { buildMessages, buildSystemPrompt } from '../ai/prompt';
 import { db } from '../db';
 import { messages, projects, todos } from '../db/schema';
 import { LocalizedError, notFound } from '../lib/errors';
@@ -56,7 +56,7 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
     idleTimeoutMs: UPSTREAM_IDLE_TIMEOUT_MS,
   });
 
-  const resolved = await resolveAssistantOutput(cfg, history, text, finishReason, { signal });
+  const resolved = await resolveAssistantOutput(cfg, history, text, finishReason, { signal, context: buildSystemPrompt(project, todo) });
 
   if (signal.aborted) throw new LocalizedError('chatAborted');
 

@@ -6,6 +6,7 @@ import {
   type Project,
   type Todo,
 } from '@ai-task-hub/shared';
+import { selectHistory, type ContextOptions } from './context';
 
 export { DOC_DELIMITER, SUFFICIENT_NO, SUFFICIENT_YES };
 
@@ -39,6 +40,7 @@ ${todo.requirementDoc || '（空）'}
 6. 对照充分性清单逐项检查：目标明确 / 范围清晰 / 技术约束已知 / 验收可验证 / 边界与排除明确 / 无阻塞性未决问题。
 7. 全部满足时：不再提问，输出完整文档并标记 YES；否则标记 NO，把未确定项写入文档「尚未解决的问题」一节。
 8. 你无权确认需求。即使信息充分，也只能提示用户去确认。
+9. 对话可能只包含最近轮次；以当前需求文档为长期上下文，不要臆测被省略的历史，关键约束不清楚时向用户核实。
 
 ## 输出格式（严格遵守，分隔符独占一行）
 先输出对话回复正文，然后：
@@ -49,9 +51,10 @@ ${SUFFICIENT_YES} 或 ${SUFFICIENT_NO}
 全程使用中文。`;
 }
 
-export function buildMessages(project: Project, todo: Todo, history: Message[]): ChatMessage[] {
+export function buildMessages(project: Project, todo: Todo, history: Message[], options: ContextOptions = {}): ChatMessage[] {
+  const system: ChatMessage = { role: 'system', content: buildSystemPrompt(project, todo) };
   return [
-    { role: 'system', content: buildSystemPrompt(project, todo) },
-    ...history.map((m) => ({ role: m.role, content: m.content })),
+    system,
+    ...selectHistory(history, [system], options),
   ];
 }

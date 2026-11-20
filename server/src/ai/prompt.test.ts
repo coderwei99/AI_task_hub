@@ -70,7 +70,7 @@ describe('buildMessages', () => {
     { id: 'm3', todoId: 't1', role: 'user', content: '第二条', createdAt: 3 },
   ];
 
-  it('system 在首位，其后按序携带全量历史', () => {
+  it('system 在首位，短历史按序完整携带', () => {
     const msgs = buildMessages(project, todo, history);
     expect(msgs[0].role).toBe('system');
     expect(msgs).toHaveLength(4);
@@ -85,5 +85,13 @@ describe('buildMessages', () => {
     const msgs = buildMessages(project, todo, []);
     expect(msgs).toHaveLength(1);
     expect(msgs[0].role).toBe('system');
+  });
+
+  it('长历史裁剪后仍保留项目、当前文档与当前消息', () => {
+    const msgs = buildMessages(project, todo, history, { inputTokenBudget: 0 });
+    expect(msgs).toHaveLength(2);
+    expect(msgs[0].content).toContain(project.techStack);
+    expect(msgs[0].content).toContain(todo.requirementDoc);
+    expect(msgs[1].content).toBe('第二条');
   });
 });

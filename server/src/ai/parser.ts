@@ -1,5 +1,6 @@
 import type { AiSettings, Message } from '@ai-task-hub/shared';
 import { jsonChatCompletion } from './client';
+import { selectHistory, type ContextOptions } from './context';
 import { DOC_DELIMITER, SUFFICIENT_NO, SUFFICIENT_YES, type ChatMessage } from './prompt';
 
 export type ParseResult =
@@ -49,12 +50,15 @@ document 固定七节：需求背景 / 需求目标 / 功能范围 / 技术约�
 sufficient 判定：目标明确 / 范围清晰 / 技术约束已知 / 验收可验证 / 边界与排除明确 / 无阻塞性未决问题，全部满足为 true，否则 false。
 你无权确认需求，sufficient 仅表示信息是否充分。全程使用中文。`;
 
-export function buildRepairMessages(history: Message[], currentReply: string): ChatMessage[] {
+export function buildRepairMessages(history: Message[], currentReply: string, options: ContextOptions & { context?: string } = {}): ChatMessage[] {
+  const system: ChatMessage = { role: 'system', content: `${REPAIR_SYSTEM_PROMPT}\n\n${options.context ?? ''}\n历史可能已裁剪。以当前需求文档为准，保留用户手动编辑的约束，不得臆测缺失历史。` };
+  const reply: ChatMessage = { role: 'assistant', content: currentReply };
+  const instruction: ChatMessage = { role: 'user', content: '请根据以上上下文整理需求文档，严格按系统提示输出 JSON 对象。' };
   return [
-    { role: 'system', content: REPAIR_SYSTEM_PROMPT },
-    ...history.map((m) => ({ role: m.role, content: m.content })),
-    { role: 'assistant', content: currentReply },
-    { role: 'user', content: '请根据以上完整对话整理需求文档，严格按系统提示输出 JSON 对象。' },
+    system,
+    ...selectHistory(history, [system, reply, instruction], options),
+    reply,
+    instruction,
   ];
 }
 
@@ -87,7 +91,7 @@ export async function resolveAssistantOutput(
   history: Message[],
   text: string,
   finishReason: string | null,
-  opts: { signal?: AbortSignal } = {},
+  opts: { signal?: AbortSignal; context?: string } = {},
 ): Promise<ResolvedOutput> {
   const parsed = parseAssistantOutput(text, finishReason);
   if (parsed.status === 'ok') {
@@ -101,7 +105,7 @@ export async function resolveAssistantOutput(
   }
 
   try {
-    const content = await jsonChatCompletion(cfg, buildRepairMessages(history, text), { signal: opts.signal });
+    const content = await jsonChatCompletion(cfg, buildRepairMessages(history, text, opts), { signal: opts.signal });
     const repair = parseRepairJson(content);
     if (repair.ok) {
       return {
