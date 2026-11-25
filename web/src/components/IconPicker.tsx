@@ -36,7 +36,9 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
     const q = query.trim().toLowerCase();
     if (!q) return CURATED_ICONS.map((i) => i.name);
     const slug = q.replace(/\s+/g, '-');
-    const curated = CURATED_ICONS.filter((i) => i.name.includes(slug) || i.keywords.includes(q)).map((i) => i.name);
+    const curated = CURATED_ICONS.filter(
+      (i) => i.name.includes(slug) || i.keywords.includes(q),
+    ).map((i) => i.name);
     const seen = new Set(curated);
     const rest = iconNames.filter((n) => !seen.has(n) && n.includes(slug));
     return [...curated, ...rest].slice(0, MAX_RESULTS);
@@ -88,7 +90,9 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
               className="h-8"
             />
             {results.length === 0 ? (
-              <p className="py-6 text-center text-xs text-muted-foreground">{t('iconPicker.noMatch')}</p>
+              <p className="py-6 text-center text-xs text-muted-foreground">
+                {t('iconPicker.noMatch')}
+              </p>
             ) : (
               <div className="grid max-h-56 grid-cols-8 gap-1 overflow-y-auto">
                 {results.map((name) => {
@@ -109,7 +113,11 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
                       {Static ? (
                         <Static className="size-4" />
                       ) : (
-                        <DynamicIcon name={name as IconName} className="size-4" fallback={() => <span className="size-4" />} />
+                        <DynamicIcon
+                          name={name as IconName}
+                          className="size-4"
+                          fallback={() => <span className="size-4" />}
+                        />
                       )}
                     </button>
                   );
@@ -117,7 +125,9 @@ export function IconPicker({ icon, color, onIconChange, onColorChange }: Props) 
               </div>
             )}
             {query.trim() && results.length === MAX_RESULTS && (
-              <p className="text-xs text-muted-foreground">{t('iconPicker.truncated', { count: MAX_RESULTS })}</p>
+              <p className="text-xs text-muted-foreground">
+                {t('iconPicker.truncated', { count: MAX_RESULTS })}
+              </p>
             )}
           </TabsContent>
 

@@ -10,7 +10,6 @@ import { activeChats } from '../services/active-chats';
 
 export const chatRoutes = new Hono();
 
-
 chatRoutes.post('/:id/chat', async (c) => {
   const id = c.req.param('id');
   const locale = requestLocale(c);

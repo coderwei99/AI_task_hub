@@ -2,7 +2,12 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { AiSettings, Message } from '@ai-task-hub/shared';
-import { buildRepairMessages, parseAssistantOutput, parseRepairJson, resolveAssistantOutput } from './parser';
+import {
+  buildRepairMessages,
+  parseAssistantOutput,
+  parseRepairJson,
+  resolveAssistantOutput,
+} from './parser';
 import { DOC_DELIMITER, SUFFICIENT_NO, SUFFICIENT_YES } from './prompt';
 
 const DOC = '# 需求背景\n这是完整文档\n## 需求目标\n暂无';
@@ -118,13 +123,23 @@ beforeAll(async () => {
     req.on('data', (c) => (body += c));
     req.on('end', () => {
       const fail = body.includes('REPAIR_FAIL');
-      const content = fail ? '抱歉我无法输出 JSON' : JSON.stringify({ document: '# 补救文档', sufficient: true });
+      const content = fail
+        ? '抱歉我无法输出 JSON'
+        : JSON.stringify({ document: '# 补救文档', sufficient: true });
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }] }));
+      res.end(
+        JSON.stringify({
+          choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }],
+        }),
+      );
     });
   });
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
-  cfg = { baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`, apiKey: 'sk-test', model: 'mock' };
+  cfg = {
+    baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`,
+    apiKey: 'sk-test',
+    model: 'mock',
+  };
 });
 
 afterAll(() => new Promise<void>((r) => server.close(() => r())));

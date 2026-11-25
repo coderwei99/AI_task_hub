@@ -46,11 +46,11 @@ pnpm start   # server 同时托管 API 与前端静态资源
 
 打开 web「设置」页，填写三项（OpenAI 兼容接口）：
 
-| 字段 | 说明 | 示例 |
-| --- | --- | --- |
+| 字段     | 说明                            | 示例                        |
+| -------- | ------------------------------- | --------------------------- |
 | Base URL | 兼容 `/chat/completions` 的地址 | `https://api.openai.com/v1` |
-| API Key | 密钥 | `sk-...` |
-| Model | 模型名 | `gpt-4o-mini` |
+| API Key  | 密钥                            | `sk-...`                    |
+| Model    | 模型名                          | `gpt-4o-mini`               |
 
 填完点「测试连接」验证可用性。配置保存在本地 SQLite 中。
 

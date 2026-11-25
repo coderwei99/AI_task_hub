@@ -99,9 +99,7 @@ function formatExportTime(ts: number): string {
 export function renderTodoMarkdown(todo: Todo, project: Project, exportedAt: number): string {
   const meta = `> 项目：${project.name} · 优先级：${PRIORITY_LABELS[todo.priority]} · 需求状态：${REQUIREMENT_STATUS_LABELS[todo.requirementStatus]} · 导出时间：${formatExportTime(exportedAt)}`;
   const quote =
-    todo.requirementStatus === 'confirmed'
-      ? meta
-      : `${meta}\n> ⚠ 本需求尚未确认，内容可能继续变化`;
+    todo.requirementStatus === 'confirmed' ? meta : `${meta}\n> ⚠ 本需求尚未确认，内容可能继续变化`;
 
   const contextLines: string[] = [];
   if (project.techStack.trim()) contextLines.push(`- 技术栈：${project.techStack.trim()}`);

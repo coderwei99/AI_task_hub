@@ -43,13 +43,19 @@ projectRoutes.post('/', async (c) => {
 });
 
 projectRoutes.get('/:id', (c) => {
-  const project = db.select().from(projects).where(eq(projects.id, c.req.param('id'))).get();
+  const project = db
+    .select()
+    .from(projects)
+    .where(eq(projects.id, c.req.param('id')))
+    .get();
   if (!project) throw notFound('projectNotFound');
   return c.json({ ...project, stats: statsFor(project.id) });
 });
 
 projectRoutes.get('/:id/export', (c) =>
-  c.text(exportProjectMarkdown(c.req.param('id')), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }),
+  c.text(exportProjectMarkdown(c.req.param('id')), 200, {
+    'Content-Type': 'text/markdown; charset=utf-8',
+  }),
 );
 
 projectRoutes.patch('/:id', async (c) => {
@@ -57,7 +63,10 @@ projectRoutes.patch('/:id', async (c) => {
   const existing = db.select().from(projects).where(eq(projects.id, id)).get();
   if (!existing) throw notFound('projectNotFound');
   const input = await parseBody(c, updateProjectSchema);
-  db.update(projects).set({ ...input, updatedAt: Date.now() }).where(eq(projects.id, id)).run();
+  db.update(projects)
+    .set({ ...input, updatedAt: Date.now() })
+    .where(eq(projects.id, id))
+    .run();
   const project = db.select().from(projects).where(eq(projects.id, id)).get()!;
   return c.json({ ...project, stats: statsFor(project.id) });
 });

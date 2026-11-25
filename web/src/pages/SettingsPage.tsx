@@ -66,7 +66,11 @@ export default function SettingsPage() {
       const result = await testConnection.mutateAsync(data);
       setTestResult(result);
     } catch (e) {
-      setTestResult({ ok: false, latencyMs: 0, error: e instanceof Error ? e.message : t('settings.testFailed') });
+      setTestResult({
+        ok: false,
+        latencyMs: 0,
+        error: e instanceof Error ? e.message : t('settings.testFailed'),
+      });
     }
   }
 
@@ -76,9 +80,7 @@ export default function SettingsPage() {
 
       <Card className="p-5">
         <h2 className="text-base font-semibold">{t('settings.aiTitle')}</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t('settings.aiDesc')}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('settings.aiDesc')}</p>
 
         {isPending ? (
           <p className="mt-4 text-sm text-muted-foreground">{t('common.loading')}</p>
@@ -109,7 +111,12 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="model">{t('settings.model')}</Label>
-              <Input id="model" value={model} onChange={(e) => setModel(e.target.value)} placeholder="gpt-4o-mini" />
+              <Input
+                id="model"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                placeholder="gpt-4o-mini"
+              />
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
@@ -123,10 +130,16 @@ export default function SettingsPage() {
                     : 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300')
                 }
               >
-                {testResult.ok ? <CheckCircle2 className="size-4" /> : <XCircle className="size-4" />}
+                {testResult.ok ? (
+                  <CheckCircle2 className="size-4" />
+                ) : (
+                  <XCircle className="size-4" />
+                )}
                 {testResult.ok
                   ? t('settings.testOk', { ms: testResult.latencyMs })
-                  : t('settings.testError', { error: testResult.error ?? t('settings.unknownError') })}
+                  : t('settings.testError', {
+                      error: testResult.error ?? t('settings.unknownError'),
+                    })}
               </div>
             )}
 
@@ -184,7 +197,10 @@ function StorageCard() {
           <div key={label} className="space-y-1.5">
             <p className="text-sm font-medium">{label}</p>
             <div className="flex items-center gap-2">
-              <code className="min-w-0 flex-1 truncate rounded bg-muted px-2 py-1.5 text-xs" title={path}>
+              <code
+                className="min-w-0 flex-1 truncate rounded bg-muted px-2 py-1.5 text-xs"
+                title={path}
+              >
                 {path}
               </code>
               <Button

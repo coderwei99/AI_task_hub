@@ -23,7 +23,9 @@ beforeAll(async () => {
         const text = truncated ? TRUNCATED_TEXT : NORMAL_TEXT;
         res.writeHead(200, { 'Content-Type': 'text/event-stream' });
         if (lastUser.includes('STALL')) {
-          res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: 'x' }, finish_reason: null }] })}\n\n`);
+          res.write(
+            `data: ${JSON.stringify({ choices: [{ delta: { content: 'x' }, finish_reason: null }] })}\n\n`,
+          );
           const ping = setInterval(() => {
             if (!res.destroyed) res.write(': ping\n\n');
           }, 30);
@@ -34,10 +36,14 @@ beforeAll(async () => {
         let i = 0;
         const timer = setInterval(() => {
           if (i < chunks.length) {
-            res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: chunks[i] }, finish_reason: null }] })}\n\n`);
+            res.write(
+              `data: ${JSON.stringify({ choices: [{ delta: { content: chunks[i] }, finish_reason: null }] })}\n\n`,
+            );
             i += 1;
           } else {
-            res.write(`data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: truncated ? 'length' : 'stop' }] })}\n\n`);
+            res.write(
+              `data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: truncated ? 'length' : 'stop' }] })}\n\n`,
+            );
             res.write('data: [DONE]\n\n');
             clearInterval(timer);
             res.end();
@@ -49,7 +55,10 @@ beforeAll(async () => {
           JSON.stringify({
             choices: [
               {
-                message: { role: 'assistant', content: JSON.stringify({ document: '# 需求背景\n补救文档', sufficient: true }) },
+                message: {
+                  role: 'assistant',
+                  content: JSON.stringify({ document: '# 需求背景\n补救文档', sufficient: true }),
+                },
                 finish_reason: 'stop',
               },
             ],
@@ -59,7 +68,11 @@ beforeAll(async () => {
     });
   });
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
-  cfg = { baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`, apiKey: 'sk-test', model: 'mock' };
+  cfg = {
+    baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`,
+    apiKey: 'sk-test',
+    model: 'mock',
+  };
 });
 
 afterAll(() => {
@@ -86,7 +99,9 @@ describe('streamChatCompletion', () => {
   });
 
   it('中断信号使调用抛出', async () => {
-    await expect(streamChatCompletion(cfg, messages, { signal: AbortSignal.abort() })).rejects.toThrow();
+    await expect(
+      streamChatCompletion(cfg, messages, { signal: AbortSignal.abort() }),
+    ).rejects.toThrow();
   });
 
   it('空闲超时（无数据）使调用抛出超时错误', async () => {

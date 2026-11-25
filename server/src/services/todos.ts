@@ -26,7 +26,10 @@ export function createTodo(projectId: string, input: CreateTodoInput): Todo {
 
     const number = project.todoSeq + 1;
     const now = Date.now();
-    tx.update(projects).set({ todoSeq: number, updatedAt: now }).where(eq(projects.id, projectId)).run();
+    tx.update(projects)
+      .set({ todoSeq: number, updatedAt: now })
+      .where(eq(projects.id, projectId))
+      .run();
 
     const todo: Todo = {
       id: nanoid(),
@@ -60,12 +63,27 @@ export function patchTodo(id: string, input: UpdateTodoInput, restoredFrom?: num
 
     if (input.executionStatus !== undefined && input.executionStatus !== existing.executionStatus) {
       updates.executionStatus = input.executionStatus;
-      logActivity(id, 'execution_status_changed', { from: existing.executionStatus, to: input.executionStatus }, tx);
+      logActivity(
+        id,
+        'execution_status_changed',
+        { from: existing.executionStatus, to: input.executionStatus },
+        tx,
+      );
     }
 
     if (input.requirementDoc !== undefined && input.requirementDoc !== existing.requirementDoc) {
       updates.requirementDoc = input.requirementDoc;
-      logActivity(id, 'doc_updated', { source: restoredFrom ? 'restore' : 'user', prevDoc: existing.requirementDoc, document: input.requirementDoc, restoredFrom }, tx);
+      logActivity(
+        id,
+        'doc_updated',
+        {
+          source: restoredFrom ? 'restore' : 'user',
+          prevDoc: existing.requirementDoc,
+          document: input.requirementDoc,
+          restoredFrom,
+        },
+        tx,
+      );
       const nextStatus = nextRequirementStatus(existing.requirementStatus, 'doc_edit');
       if (nextStatus !== existing.requirementStatus) {
         updates.requirementStatus = nextStatus;

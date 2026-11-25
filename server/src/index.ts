@@ -18,13 +18,19 @@ const app = new Hono();
 
 app.onError((err, c) => {
   if (err instanceof ApiError) {
-    return c.json({ error: { code: err.code, message: err.localize(requestLocale(c)) } }, err.status);
+    return c.json(
+      { error: { code: err.code, message: err.localize(requestLocale(c)) } },
+      err.status,
+    );
   }
   if (err instanceof HTTPException) {
     return c.json({ error: { code: 'HTTP_ERROR', message: err.message } }, err.status);
   }
   console.error(err);
-  return c.json({ error: { code: 'INTERNAL', message: formatMessage(requestLocale(c), 'internal') } }, 500);
+  return c.json(
+    { error: { code: 'INTERNAL', message: formatMessage(requestLocale(c), 'internal') } },
+    500,
+  );
 });
 
 runMigrations();
@@ -38,7 +44,12 @@ app.route('/api/todos', chatRoutes);
 app.route('/api/tasks', taskRoutes);
 app.route('/api/settings', settingsRoutes);
 
-app.all('/api/*', (c) => c.json({ error: { code: 'NOT_FOUND', message: formatMessage(requestLocale(c), 'apiNotFound') } }, 404));
+app.all('/api/*', (c) =>
+  c.json(
+    { error: { code: 'NOT_FOUND', message: formatMessage(requestLocale(c), 'apiNotFound') } },
+    404,
+  ),
+);
 
 if (process.env.NODE_ENV === 'production') {
   const webDist = fileURLToPath(new URL('../../web/dist', import.meta.url));

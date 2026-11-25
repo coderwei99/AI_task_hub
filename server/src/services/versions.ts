@@ -7,18 +7,32 @@ import { getTodoOrThrow, patchTodo } from './todos';
 
 export function documentVersions(todoId: string) {
   const todo = getTodoOrThrow(todoId);
-  const changes = db.select().from(activities).where(eq(activities.todoId, todoId))
-    .orderBy(asc(activities.createdAt), sql`rowid asc`).all()
+  const changes = db
+    .select()
+    .from(activities)
+    .where(eq(activities.todoId, todoId))
+    .orderBy(asc(activities.createdAt), sql`rowid asc`)
+    .all()
     .filter((a) => a.type === 'doc_updated');
   return changes.map((change, index) => {
     const payload = JSON.parse(change.payload);
     // Legacy events only stored the previous content. The next event captures
     // this event's result; the newest result is the current document.
     const next = changes[index + 1];
-    const document = typeof payload.document === 'string' ? payload.document
-      : next ? JSON.parse(next.payload).prevDoc : todo.requirementDoc;
-    return { id: change.id, number: index + 1, document, createdAt: change.createdAt,
-      source: payload.source as string, restoredFrom: payload.restoredFrom as number | undefined };
+    const document =
+      typeof payload.document === 'string'
+        ? payload.document
+        : next
+          ? JSON.parse(next.payload).prevDoc
+          : todo.requirementDoc;
+    return {
+      id: change.id,
+      number: index + 1,
+      document,
+      createdAt: change.createdAt,
+      source: payload.source as string,
+      restoredFrom: payload.restoredFrom as number | undefined,
+    };
   });
 }
 

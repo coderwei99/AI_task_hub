@@ -65,7 +65,8 @@ const enErrors: Record<ErrorKey, string> = {
   descriptionRequired: 'Original description is required',
   messageRequired: 'Message cannot be empty',
   aiNotConfigured: 'Configure the AI service in Settings first (Base URL / API Key / model)',
-  chatInProgress: 'A conversation is already running for this Todo. Wait for it to finish or stop it, then retry',
+  chatInProgress:
+    'A conversation is already running for this Todo. Wait for it to finish or stop it, then retry',
   chatAborted: 'Conversation aborted',
   aiCallFailed: 'AI request failed',
   aiHttpError: 'AI service returned HTTP {{status}}: {{body}}',
@@ -73,10 +74,14 @@ const enErrors: Record<ErrorKey, string> = {
   aiEmptyContent: 'AI returned no valid content',
   connectionFailed: 'Connection failed',
   noConfirmedTasks: 'No confirmed tasks yet',
-  todoNotConfirmable: 'The requirement cannot be confirmed yet. Wait for the AI to finish its analysis',
+  todoNotConfirmable:
+    'The requirement cannot be confirmed yet. Wait for the AI to finish its analysis',
 };
 
-export const ERROR_MESSAGES: Record<Locale, Record<ErrorKey, string>> = { zh: zhErrors, en: enErrors };
+export const ERROR_MESSAGES: Record<Locale, Record<ErrorKey, string>> = {
+  zh: zhErrors,
+  en: enErrors,
+};
 
 export function isErrorKey(value: string): value is ErrorKey {
   return Object.hasOwn(zhErrors, value);
@@ -84,12 +89,15 @@ export function isErrorKey(value: string): value is ErrorKey {
 
 export function formatMessage(locale: Locale, key: ErrorKey, params?: MessageParams): string {
   const template = ERROR_MESSAGES[locale][key];
-  return params ? template.replace(/\{\{(\w+)\}\}/g, (m, name) => String(params[name] ?? m)) : template;
+  return params
+    ? template.replace(/\{\{(\w+)\}\}/g, (m, name) => String(params[name] ?? m))
+    : template;
 }
 
 const zodErrorMaps = { zh: z.locales.zhCN().localeError, en: z.locales.en().localeError };
 
-export type LocalizedParseResult<T> = { success: true; data: T } | { success: false; message: string };
+export type LocalizedParseResult<T> =
+  { success: true; data: T } | { success: false; message: string };
 
 /** Schema messages are ErrorKeys; checks without a custom message use zod's built-in locale. */
 export function parseWithLocale<S extends ZodType>(
@@ -101,5 +109,8 @@ export function parseWithLocale<S extends ZodType>(
   if (result.success) return { success: true, data: result.data };
   const message = result.error.issues[0]?.message;
   if (!message) return { success: false, message: formatMessage(locale, 'invalidParams') };
-  return { success: false, message: isErrorKey(message) ? formatMessage(locale, message) : message };
+  return {
+    success: false,
+    message: isErrorKey(message) ? formatMessage(locale, message) : message,
+  };
 }

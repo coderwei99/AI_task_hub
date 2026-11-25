@@ -1,4 +1,10 @@
-export const REQUIREMENT_STATUSES = ['pending', 'polishing', 'ai_ready', 'confirmed', 'reconfirm'] as const;
+export const REQUIREMENT_STATUSES = [
+  'pending',
+  'polishing',
+  'ai_ready',
+  'confirmed',
+  'reconfirm',
+] as const;
 export type RequirementStatus = (typeof REQUIREMENT_STATUSES)[number];
 
 export const EXECUTION_STATUSES = ['todo', 'in_progress', 'review', 'done', 'paused'] as const;
@@ -7,7 +13,18 @@ export type ExecutionStatus = (typeof EXECUTION_STATUSES)[number];
 export const PRIORITIES = ['high', 'medium', 'low'] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
-export const PROJECT_COLORS = ['gray', 'red', 'orange', 'amber', 'green', 'teal', 'blue', 'indigo', 'violet', 'pink'] as const;
+export const PROJECT_COLORS = [
+  'gray',
+  'red',
+  'orange',
+  'amber',
+  'green',
+  'teal',
+  'blue',
+  'indigo',
+  'violet',
+  'pink',
+] as const;
 export type ProjectColor = (typeof PROJECT_COLORS)[number];
 
 export const LUCIDE_ICON_PREFIX = 'lucide:';

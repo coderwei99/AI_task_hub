@@ -24,7 +24,9 @@ afterAll(() => {
 
 const DOC = '## 需求背景\n背景\n## 尚未解决的问题\n暂无';
 
-function seedProject(overrides: { techStack?: string; constraints?: string; description?: string } = {}) {
+function seedProject(
+  overrides: { techStack?: string; constraints?: string; description?: string } = {},
+) {
   const now = Date.now();
   const projectId = nanoid();
   db.insert(projects)
@@ -43,7 +45,12 @@ function seedProject(overrides: { techStack?: string; constraints?: string; desc
   return projectId;
 }
 
-function seedTodo(projectId: string, number: number, status: RequirementStatus, title = `任务${number}`) {
+function seedTodo(
+  projectId: string,
+  number: number,
+  status: RequirementStatus,
+  title = `任务${number}`,
+) {
   const now = Date.now();
   const todoId = nanoid();
   db.insert(todos)

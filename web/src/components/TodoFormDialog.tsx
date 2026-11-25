@@ -1,14 +1,32 @@
 import { useEffect, useState } from 'react';
-import { createTodoSchema, parseWithLocale, PRIORITIES, type Priority, type Todo } from '@ai-task-hub/shared';
+import {
+  createTodoSchema,
+  parseWithLocale,
+  PRIORITIES,
+  type Priority,
+  type Todo,
+} from '@ai-task-hub/shared';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { currentLocale } from '@/i18n';
 import { useCreateTodo } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
 interface Props {
@@ -37,7 +55,11 @@ export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Pro
   }, [open]);
 
   async function handleSubmit() {
-    const parsed = parseWithLocale(createTodoSchema, { title, originalDescription, priority }, currentLocale());
+    const parsed = parseWithLocale(
+      createTodoSchema,
+      { title, originalDescription, priority },
+      currentLocale(),
+    );
     if (!parsed.success) {
       setError(parsed.message);
       return;

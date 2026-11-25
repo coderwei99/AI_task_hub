@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { canConfirm, nextRequirementStatus, type RequirementEvent } from './state-machine';
 import { REQUIREMENT_STATUSES, type RequirementStatus } from './types';
 
-const EVENTS: RequirementEvent[] = ['user_message', 'ai_sufficient', 'ai_insufficient', 'user_confirm', 'doc_edit'];
+const EVENTS: RequirementEvent[] = [
+  'user_message',
+  'ai_sufficient',
+  'ai_insufficient',
+  'user_confirm',
+  'doc_edit',
+];
 
 // 设计文档 6.1 完整转换表的期望矩阵（手工推导，作为测试基准）。
 const TABLE: Record<RequirementStatus, Record<RequirementEvent, RequirementStatus>> = {

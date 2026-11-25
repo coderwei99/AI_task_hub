@@ -31,12 +31,17 @@ beforeAll(async () => {
     let body = '';
     req.on('data', (c) => (body += c));
     req.on('end', () => {
-      const parsed = JSON.parse(body) as { stream?: boolean; messages: { role: string; content: string }[] };
+      const parsed = JSON.parse(body) as {
+        stream?: boolean;
+        messages: { role: string; content: string }[];
+      };
       const lastUser = [...parsed.messages].reverse().find((m) => m.role === 'user')?.content ?? '';
       if (parsed.stream) {
         res.writeHead(200, { 'Content-Type': 'text/event-stream' });
         if (lastUser.includes('STALL')) {
-          res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: '部分回复' }, finish_reason: null }] })}\n\n`);
+          res.write(
+            `data: ${JSON.stringify({ choices: [{ delta: { content: '部分回复' }, finish_reason: null }] })}\n\n`,
+          );
           const ping = setInterval(() => {
             if (!res.destroyed) res.write(': ping\n\n');
           }, 50);
@@ -52,10 +57,14 @@ beforeAll(async () => {
         let i = 0;
         const timer = setInterval(() => {
           if (i < chunks.length) {
-            res.write(`data: ${JSON.stringify({ choices: [{ delta: { content: chunks[i] }, finish_reason: null }] })}\n\n`);
+            res.write(
+              `data: ${JSON.stringify({ choices: [{ delta: { content: chunks[i] }, finish_reason: null }] })}\n\n`,
+            );
             i += 1;
           } else {
-            res.write(`data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: 'stop' }] })}\n\n`);
+            res.write(
+              `data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: 'stop' }] })}\n\n`,
+            );
             res.write('data: [DONE]\n\n');
             clearInterval(timer);
             res.end();
@@ -63,14 +72,24 @@ beforeAll(async () => {
         }, 2);
       } else {
         repairCalls += 1;
-        const content = body.includes('REPAIRFAIL') ? '不是 JSON' : JSON.stringify({ document: '# 补救文档', sufficient: true });
+        const content = body.includes('REPAIRFAIL')
+          ? '不是 JSON'
+          : JSON.stringify({ document: '# 补救文档', sufficient: true });
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }] }));
+        res.end(
+          JSON.stringify({
+            choices: [{ message: { role: 'assistant', content }, finish_reason: 'stop' }],
+          }),
+        );
       }
     });
   });
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
-  cfg = { baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`, apiKey: 'sk-test', model: 'mock' };
+  cfg = {
+    baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1`,
+    apiKey: 'sk-test',
+    model: 'mock',
+  };
 });
 
 afterAll(async () => {
@@ -87,17 +106,41 @@ function seedTodo(requirementStatus: RequirementStatus = 'pending', requirementD
   const now = Date.now();
   const projectId = nanoid();
   db.insert(projects)
-    .values({ id: projectId, name: '测试项目', icon: '📁', description: '', techStack: '', constraints: '', todoSeq: 1, createdAt: now, updatedAt: now })
+    .values({
+      id: projectId,
+      name: '测试项目',
+      icon: '📁',
+      description: '',
+      techStack: '',
+      constraints: '',
+      todoSeq: 1,
+      createdAt: now,
+      updatedAt: now,
+    })
     .run();
   const todoId = nanoid();
   db.insert(todos)
-    .values({ id: todoId, projectId, number: 1, title: '测试任务', originalDescription: '原始描述', requirementDoc, requirementStatus, executionStatus: 'todo', priority: 'medium', confirmedAt: null, createdAt: now, updatedAt: now })
+    .values({
+      id: todoId,
+      projectId,
+      number: 1,
+      title: '测试任务',
+      originalDescription: '原始描述',
+      requirementDoc,
+      requirementStatus,
+      executionStatus: 'todo',
+      priority: 'medium',
+      confirmedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    })
     .run();
   return todoId;
 }
 
 const idle = () => new AbortController().signal;
-const msgsOf = (id: string) => db.select().from(messages).where(eq(messages.todoId, id)).orderBy(asc(messages.createdAt)).all();
+const msgsOf = (id: string) =>
+  db.select().from(messages).where(eq(messages.todoId, id)).orderBy(asc(messages.createdAt)).all();
 const todoOf = (id: string) => db.select().from(todos).where(eq(todos.id, id)).get()!;
 const actsOf = (id: string) => db.select().from(activities).where(eq(activities.todoId, id)).all();
 
@@ -105,10 +148,24 @@ describe('runChatTurn', () => {
   it('正常 YES：流式落库 + 文档更新 + polishing→ai_ready', async () => {
     const todoId = seedTodo();
     const deltas: string[] = [];
-    const result = await runChatTurn({ todoId, content: '打磨需求', cfg, signal: idle(), onDelta: (t) => { deltas.push(t); } });
+    const result = await runChatTurn({
+      todoId,
+      content: '打磨需求',
+      cfg,
+      signal: idle(),
+      onDelta: (t) => {
+        deltas.push(t);
+      },
+    });
 
     expect(deltas.join('')).toBe(NORMAL);
-    expect(result).toMatchObject({ sufficient: true, requirementStatus: 'ai_ready', docUpdated: true, docRecovered: false, parseWarning: false });
+    expect(result).toMatchObject({
+      sufficient: true,
+      requirementStatus: 'ai_ready',
+      docUpdated: true,
+      docRecovered: false,
+      parseWarning: false,
+    });
     expect(repairCalls).toBe(0);
 
     const msgs = msgsOf(todoId);
@@ -126,7 +183,13 @@ describe('runChatTurn', () => {
 
   it('正常 NO：更新文档但状态保持 polishing', async () => {
     const todoId = seedTodo();
-    const result = await runChatTurn({ todoId, content: 'INSUFF', cfg, signal: idle(), onDelta: () => {} });
+    const result = await runChatTurn({
+      todoId,
+      content: 'INSUFF',
+      cfg,
+      signal: idle(),
+      onDelta: () => {},
+    });
     expect(result.sufficient).toBe(false);
     expect(result.requirementStatus).toBe('polishing');
     expect(result.docUpdated).toBe(true);
@@ -162,7 +225,13 @@ describe('runChatTurn', () => {
 
   it('缺分隔符 → JSON mode 补救成功（至多一次）', async () => {
     const todoId = seedTodo();
-    const result = await runChatTurn({ todoId, content: 'NODOC', cfg, signal: idle(), onDelta: () => {} });
+    const result = await runChatTurn({
+      todoId,
+      content: 'NODOC',
+      cfg,
+      signal: idle(),
+      onDelta: () => {},
+    });
     expect(result.docRecovered).toBe(true);
     expect(result.parseWarning).toBe(false);
     expect(result.requirementStatus).toBe('ai_ready');
@@ -173,8 +242,20 @@ describe('runChatTurn', () => {
 
   it('补救失败 → parseWarning，不更新文档/状态', async () => {
     const todoId = seedTodo();
-    const result = await runChatTurn({ todoId, content: 'REPAIRFAIL', cfg, signal: idle(), onDelta: () => {} });
-    expect(result).toMatchObject({ parseWarning: true, docRecovered: false, sufficient: null, docUpdated: false, requirementStatus: 'polishing' });
+    const result = await runChatTurn({
+      todoId,
+      content: 'REPAIRFAIL',
+      cfg,
+      signal: idle(),
+      onDelta: () => {},
+    });
+    expect(result).toMatchObject({
+      parseWarning: true,
+      docRecovered: false,
+      sufficient: null,
+      docUpdated: false,
+      requirementStatus: 'polishing',
+    });
     expect(repairCalls).toBe(1);
     expect(todoOf(todoId).requirementDoc).toBe('');
     expect(msgsOf(todoId)[1].content).toBe(NO_DOC);
@@ -182,12 +263,21 @@ describe('runChatTurn', () => {
 
   it('已确认 Todo 再次对话 → confirmed→polishing→ai_ready', async () => {
     const todoId = seedTodo('confirmed', '# 旧文档');
-    const result = await runChatTurn({ todoId, content: '继续打磨', cfg, signal: idle(), onDelta: () => {} });
+    const result = await runChatTurn({
+      todoId,
+      content: '继续打磨',
+      cfg,
+      signal: idle(),
+      onDelta: () => {},
+    });
     expect(result.requirementStatus).toBe('ai_ready');
     const chatTransition = actsOf(todoId).find(
       (a) => a.type === 'requirement_status_changed' && JSON.parse(a.payload).reason === 'chat',
     );
     expect(chatTransition).toBeTruthy();
-    expect(JSON.parse(chatTransition!.payload)).toMatchObject({ from: 'confirmed', to: 'polishing' });
+    expect(JSON.parse(chatTransition!.payload)).toMatchObject({
+      from: 'confirmed',
+      to: 'polishing',
+    });
   });
 });

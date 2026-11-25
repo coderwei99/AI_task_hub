@@ -48,6 +48,10 @@ function subscribe(callback: () => void) {
 
 export function useTheme() {
   const theme = useSyncExternalStore(subscribe, readTheme, () => 'system' as Theme);
-  const resolved = useSyncExternalStore(subscribe, () => resolveTheme(readTheme()), () => 'light' as const);
+  const resolved = useSyncExternalStore(
+    subscribe,
+    () => resolveTheme(readTheme()),
+    () => 'light' as const,
+  );
   return { theme, resolvedTheme: resolved, setTheme };
 }

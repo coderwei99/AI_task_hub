@@ -21,7 +21,9 @@ describe('resolveLocale', () => {
 
 describe('formatMessage', () => {
   it('替换插值参数', () => {
-    expect(formatMessage('en', 'aiTimeout', { seconds: 60 })).toBe('AI response timed out (no data for 60s)');
+    expect(formatMessage('en', 'aiTimeout', { seconds: 60 })).toBe(
+      'AI response timed out (no data for 60s)',
+    );
     expect(formatMessage('zh', 'requestFailed', { status: 502 })).toBe('请求失败 (502)');
   });
 });
@@ -35,13 +37,20 @@ describe('parseWithLocale', () => {
   });
 
   it('未自定义消息的校验使用 zod 内置语言包', () => {
-    const r = parseWithLocale(createTodoSchema, { title: 'a', originalDescription: 'b', priority: 'urgent' }, 'zh');
+    const r = parseWithLocale(
+      createTodoSchema,
+      { title: 'a', originalDescription: 'b', priority: 'urgent' },
+      'zh',
+    );
     expect(r.success).toBe(false);
     expect(!r.success && /[\u4e00-\u9fff]/.test(r.message)).toBe(true);
   });
 
   it('成功时返回解析结果', () => {
     const r = parseWithLocale(createTodoSchema, { title: 'a', originalDescription: 'b' }, 'en');
-    expect(r).toEqual({ success: true, data: { title: 'a', originalDescription: 'b', priority: 'medium' } });
+    expect(r).toEqual({
+      success: true,
+      data: { title: 'a', originalDescription: 'b', priority: 'medium' },
+    });
   });
 });

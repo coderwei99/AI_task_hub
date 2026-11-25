@@ -44,7 +44,8 @@ export class ApiError extends LocalizedError {
 
 export const notFound = (key: ErrorKey = 'notFound') => new ApiError(404, 'NOT_FOUND', key);
 export const badRequest = (key: ErrorKey) => new ApiError(400, 'VALIDATION', key);
-export const validationError = (detail: string) => new ApiError(400, 'VALIDATION', 'invalidParams', undefined, detail);
+export const validationError = (detail: string) =>
+  new ApiError(400, 'VALIDATION', 'invalidParams', undefined, detail);
 export const conflict = (key: ErrorKey) => new ApiError(409, 'CONFLICT', key);
 
 export const requestLocale = (c: Context): Locale => resolveLocale(c.req.header('accept-language'));

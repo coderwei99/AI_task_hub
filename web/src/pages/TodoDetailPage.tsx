@@ -11,7 +11,14 @@ import {
   type ExecutionStatus,
   type Priority,
 } from '@ai-task-hub/shared';
-import { useActivities, useConfirmTodo, useDeleteTodo, useProject, useTodo, useUpdateTodo } from '@/api/hooks';
+import {
+  useActivities,
+  useConfirmTodo,
+  useDeleteTodo,
+  useProject,
+  useTodo,
+  useUpdateTodo,
+} from '@/api/hooks';
 import { ApiClientError } from '@/api/client';
 import { ActivityTimeline } from '@/components/ActivityTimeline';
 import { ChatPanel } from '@/components/ChatPanel';
@@ -45,7 +52,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
 import { useMediaQuery } from '@/lib/useMediaQuery';
@@ -116,7 +129,9 @@ export default function TodoDetailPage() {
     const isNotFound = error instanceof ApiClientError && error.status === 404;
     return (
       <div className="flex flex-col items-center gap-3 p-20 text-center">
-        <p className="text-muted-foreground">{isNotFound ? t('todo.notFound') : t('todo.loadFailed')}</p>
+        <p className="text-muted-foreground">
+          {isNotFound ? t('todo.notFound') : t('todo.loadFailed')}
+        </p>
         <div className="flex items-center gap-2">
           {!isNotFound && (
             <Button variant="outline" onClick={() => refetch()}>
@@ -140,7 +155,10 @@ export default function TodoDetailPage() {
       <div className="border-b p-4 pb-3 md:p-6 md:pb-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
-            <Link to={`/projects/${projectId}`} className="flex items-center gap-1 hover:text-foreground">
+            <Link
+              to={`/projects/${projectId}`}
+              className="flex items-center gap-1 hover:text-foreground"
+            >
               {project && <ProjectIcon icon={project.icon} color={project.color} size="sm" />}
               <span className="truncate">{project?.name ?? t('todo.projectFallback')}</span>
             </Link>
@@ -148,7 +166,11 @@ export default function TodoDetailPage() {
             <span className="font-mono">{formatTodoNumber(todo.number)}</span>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Button variant="outline" disabled={copyPending} onClick={() => copy(`/todos/${todo.id}/export`)}>
+            <Button
+              variant="outline"
+              disabled={copyPending}
+              onClick={() => copy(`/todos/${todo.id}/export`)}
+            >
               <Copy /> Copy
             </Button>
             <Button
@@ -201,7 +223,9 @@ export default function TodoDetailPage() {
             <span className="text-muted-foreground">{t('todo.executionStatus')}</span>
             <Select
               value={todo.executionStatus}
-              onValueChange={(v) => updateTodo.mutate({ id: todo.id, input: { executionStatus: v as ExecutionStatus } })}
+              onValueChange={(v) =>
+                updateTodo.mutate({ id: todo.id, input: { executionStatus: v as ExecutionStatus } })
+              }
             >
               <SelectTrigger size="sm" className="w-32">
                 <SelectValue />
@@ -219,7 +243,9 @@ export default function TodoDetailPage() {
             <span className="text-muted-foreground">{t('todo.priority')}</span>
             <Select
               value={todo.priority}
-              onValueChange={(v) => updateTodo.mutate({ id: todo.id, input: { priority: v as Priority } })}
+              onValueChange={(v) =>
+                updateTodo.mutate({ id: todo.id, input: { priority: v as Priority } })
+              }
             >
               <SelectTrigger size="sm" className="w-24">
                 <SelectValue />
@@ -252,7 +278,12 @@ export default function TodoDetailPage() {
             <RequirementDocPanel todo={todo} activities={activities ?? []} />
           </TabsContent>
           <TabsContent value="activity" className="min-h-0 flex-1 overflow-y-auto p-4">
-            <ActivityTimeline activities={activities ?? []} todoId={todo.id} currentDocument={todo.requirementDoc} generating={generating} />
+            <ActivityTimeline
+              activities={activities ?? []}
+              todoId={todo.id}
+              currentDocument={todo.requirementDoc}
+              generating={generating}
+            />
           </TabsContent>
         </Tabs>
       ) : (
@@ -271,7 +302,12 @@ export default function TodoDetailPage() {
                 <RequirementDocPanel todo={todo} activities={activities ?? []} />
               </TabsContent>
               <TabsContent value="activity" className="min-h-0 flex-1 overflow-y-auto p-4">
-                <ActivityTimeline activities={activities ?? []} todoId={todo.id} currentDocument={todo.requirementDoc} generating={generating} />
+                <ActivityTimeline
+                  activities={activities ?? []}
+                  todoId={todo.id}
+                  currentDocument={todo.requirementDoc}
+                  generating={generating}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -286,7 +322,10 @@ export default function TodoDetailPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={confirmDelete}>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={confirmDelete}
+            >
               {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>

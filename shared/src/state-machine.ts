@@ -1,13 +1,12 @@
 import type { RequirementStatus } from './types';
 
 export type RequirementEvent =
-  | 'user_message'
-  | 'ai_sufficient'
-  | 'ai_insufficient'
-  | 'user_confirm'
-  | 'doc_edit';
+  'user_message' | 'ai_sufficient' | 'ai_insufficient' | 'user_confirm' | 'doc_edit';
 
-export function nextRequirementStatus(current: RequirementStatus, event: RequirementEvent): RequirementStatus {
+export function nextRequirementStatus(
+  current: RequirementStatus,
+  event: RequirementEvent,
+): RequirementStatus {
   switch (event) {
     case 'user_message':
       return 'polishing';
@@ -22,6 +21,10 @@ export function nextRequirementStatus(current: RequirementStatus, event: Require
   }
 }
 
-export function canConfirm(current: RequirementStatus, document: string, generating = false): boolean {
+export function canConfirm(
+  current: RequirementStatus,
+  document: string,
+  generating = false,
+): boolean {
   return current !== 'confirmed' && document.trim().length > 0 && !generating;
 }

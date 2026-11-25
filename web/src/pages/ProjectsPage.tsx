@@ -91,25 +91,36 @@ export default function ProjectsPage() {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-7" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <MoreHorizontal />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenuItem onClick={() => openEdit(p)}>{t('common.edit')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openEdit(p)}>
+                      {t('common.edit')}
+                    </DropdownMenuItem>
                     <DropdownMenuItem className="text-destructive" onClick={() => setDeleting(p)}>
                       {t('common.delete')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              {p.description && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>}
+              {p.description && (
+                <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+              )}
               <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
                 <span>{t('projects.statTotal', { count: p.stats.total })}</span>
                 <span>{t('projects.statPending', { count: p.stats.pending })}</span>
                 <span>{t('projects.statConfirmed', { count: p.stats.confirmed })}</span>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">{t('projects.updatedAt', { time: relativeTime(p.updatedAt) })}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t('projects.updatedAt', { time: relativeTime(p.updatedAt) })}
+              </p>
             </Card>
           ))}
         </div>
@@ -120,7 +131,9 @@ export default function ProjectsPage() {
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('projects.deleteTitle', { name: deleting?.name })}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('projects.deleteTitle', { name: deleting?.name })}
+            </AlertDialogTitle>
             <AlertDialogDescription>{t('projects.deleteDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

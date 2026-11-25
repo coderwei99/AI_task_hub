@@ -118,7 +118,8 @@ export function useCreateTodo() {
 export function useUpdateTodo() {
   const invalidate = useInvalidateTodoRelated();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateTodoInput }) => api.patch<Todo>(`/todos/${id}`, input),
+    mutationFn: ({ id, input }: { id: string; input: UpdateTodoInput }) =>
+      api.patch<Todo>(`/todos/${id}`, input),
     onSuccess: invalidate,
   });
 }

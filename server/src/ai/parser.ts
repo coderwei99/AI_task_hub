@@ -50,10 +50,20 @@ document 固定七节：需求背景 / 需求目标 / 功能范围 / 技术约�
 sufficient 判定：目标明确 / 范围清晰 / 技术约束已知 / 验收可验证 / 边界与排除明确 / 无阻塞性未决问题，全部满足为 true，否则 false。
 你无权确认需求，sufficient 仅表示信息是否充分。全程使用中文。`;
 
-export function buildRepairMessages(history: Message[], currentReply: string, options: ContextOptions & { context?: string } = {}): ChatMessage[] {
-  const system: ChatMessage = { role: 'system', content: `${REPAIR_SYSTEM_PROMPT}\n\n${options.context ?? ''}\n历史可能已裁剪。以当前需求文档为准，保留用户手动编辑的约束，不得臆测缺失历史。` };
+export function buildRepairMessages(
+  history: Message[],
+  currentReply: string,
+  options: ContextOptions & { context?: string } = {},
+): ChatMessage[] {
+  const system: ChatMessage = {
+    role: 'system',
+    content: `${REPAIR_SYSTEM_PROMPT}\n\n${options.context ?? ''}\n历史可能已裁剪。以当前需求文档为准，保留用户手动编辑的约束，不得臆测缺失历史。`,
+  };
   const reply: ChatMessage = { role: 'assistant', content: currentReply };
-  const instruction: ChatMessage = { role: 'user', content: '请根据以上上下文整理需求文档，严格按系统提示输出 JSON 对象。' };
+  const instruction: ChatMessage = {
+    role: 'user',
+    content: '请根据以上上下文整理需求文档，严格按系统提示输出 JSON 对象。',
+  };
   return [
     system,
     ...selectHistory(history, [system, reply, instruction], options),
@@ -105,7 +115,9 @@ export async function resolveAssistantOutput(
   }
 
   try {
-    const content = await jsonChatCompletion(cfg, buildRepairMessages(history, text, opts), { signal: opts.signal });
+    const content = await jsonChatCompletion(cfg, buildRepairMessages(history, text, opts), {
+      signal: opts.signal,
+    });
     const repair = parseRepairJson(content);
     if (repair.ok) {
       return {
@@ -120,5 +132,11 @@ export async function resolveAssistantOutput(
     // 补救调用失败（含中断）→ 降级为 parseWarning，是否落库由调用方依据 signal 决定
   }
 
-  return { chatBody: parsed.chatBody, document: null, sufficient: null, docRecovered: false, parseWarning: true };
+  return {
+    chatBody: parsed.chatBody,
+    document: null,
+    sufficient: null,
+    docRecovered: false,
+    parseWarning: true,
+  };
 }

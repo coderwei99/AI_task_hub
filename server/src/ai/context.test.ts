@@ -32,7 +32,9 @@ describe('context window', () => {
   });
 
   it('跳过没有用户消息的孤立回复', () => {
-    expect(selectHistory([{ role: 'assistant', content: '孤立' }, ...history], [])).toEqual(history);
+    expect(selectHistory([{ role: 'assistant', content: '孤立' }, ...history], [])).toEqual(
+      history,
+    );
     expect(selectHistory([], [])).toEqual([]);
   });
 
@@ -42,7 +44,17 @@ describe('context window', () => {
   });
 
   it('补救调用也裁剪历史并保留文档、本轮回复和整理指令', () => {
-    const messages = buildRepairMessages(history.map((m, i) => ({ ...m, role: m.role as 'user' | 'assistant', id: String(i), todoId: 't', createdAt: i })), '本轮回复', { inputTokenBudget: 0, context: '手动编辑文档' });
+    const messages = buildRepairMessages(
+      history.map((m, i) => ({
+        ...m,
+        role: m.role as 'user' | 'assistant',
+        id: String(i),
+        todoId: 't',
+        createdAt: i,
+      })),
+      '本轮回复',
+      { inputTokenBudget: 0, context: '手动编辑文档' },
+    );
     expect(messages).toHaveLength(4);
     expect(messages[0].content).toContain('手动编辑文档');
     expect(messages[1].content).toBe('当前消息');

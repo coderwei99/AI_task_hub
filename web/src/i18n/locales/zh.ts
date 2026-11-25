@@ -166,7 +166,8 @@ export const zh = {
     deleteTitle: '删除「{{title}}」？',
     deleteDesc: '将同时删除该 Todo 的对话与活动记录，此操作不可撤销。',
     confirmDialogTitle: '确认需求',
-    confirmDialogDesc: '确认后「{{title}}」将标记为已确认，可 Copy 交给 Coding Agent。请核对以下需求文档摘要。',
+    confirmDialogDesc:
+      '确认后「{{title}}」将标记为已确认，可 Copy 交给 Coding Agent。请核对以下需求文档摘要。',
     noDoc: '暂无文档内容',
     confirmAction: '确认',
   },
@@ -199,7 +200,8 @@ export const zh = {
     viewVersion: '查看版本',
     historyVersion: '历史版本 v{{number}}',
     restoreVersion: '恢复此版本',
-    restoreHint: '将用此版本替换当前需求文档。后续历史记录会保留，聊天记录和任务执行状态不会改变。已确认的文档恢复后需重新确认。AI 生成期间不可恢复。',
+    restoreHint:
+      '将用此版本替换当前需求文档。后续历史记录会保留，聊天记录和任务执行状态不会改变。已确认的文档恢复后需重新确认。AI 生成期间不可恢复。',
     restored: '已恢复历史版本',
     restoredFrom: '恢复了 v{{number}} 的内容',
     saved: '需求文档已保存',
@@ -234,7 +236,8 @@ export const zh = {
   settings: {
     title: '设置',
     aiTitle: 'AI 模型配置',
-    aiDesc: '兼容 OpenAI Chat Completions 接口。需求内容会发送到你配置的 AI 服务，请使用你信任的服务商。',
+    aiDesc:
+      '兼容 OpenAI Chat Completions 接口。需求内容会发送到你配置的 AI 服务，请使用你信任的服务商。',
     loadFailed: '配置加载失败',
     apiKeyHint: '仅保存在本地 SQLite，不会上传到任何第三方。',
     model: '模型',
@@ -246,7 +249,8 @@ export const zh = {
     testing: '测试中…',
     test: '测试连接',
     dataTitle: '数据存储',
-    dataDesc: '项目、Todo、对话与设置保存在运行服务的电脑上的 SQLite 数据库中，不提供云端同步。使用 AI 对话时，相关需求与对话内容会发送至你配置的 AI 服务商。',
+    dataDesc:
+      '项目、Todo、对话与设置保存在运行服务的电脑上的 SQLite 数据库中，不提供云端同步。使用 AI 对话时，相关需求与对话内容会发送至你配置的 AI 服务商。',
     dataDir: '数据目录',
     dbFile: '数据库文件',
     copyPath: '复制路径',

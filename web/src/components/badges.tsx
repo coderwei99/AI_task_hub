@@ -25,7 +25,13 @@ const PRIORITY_COLORS: Record<Priority, string> = {
   low: 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300',
 };
 
-export function RequirementBadge({ status, className }: { status: RequirementStatus; className?: string }) {
+export function RequirementBadge({
+  status,
+  className,
+}: {
+  status: RequirementStatus;
+  className?: string;
+}) {
   const { t } = useTranslation();
   return (
     <Badge variant="secondary" className={cn('font-normal', REQUIREMENT_COLORS[status], className)}>
@@ -34,7 +40,13 @@ export function RequirementBadge({ status, className }: { status: RequirementSta
   );
 }
 
-export function ExecutionBadge({ status, className }: { status: ExecutionStatus; className?: string }) {
+export function ExecutionBadge({
+  status,
+  className,
+}: {
+  status: ExecutionStatus;
+  className?: string;
+}) {
   const { t } = useTranslation();
   return (
     <Badge variant="secondary" className={cn('font-normal', EXECUTION_COLORS[status], className)}>

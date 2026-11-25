@@ -1,11 +1,22 @@
 import { useEffect, useState } from 'react';
-import { createProjectSchema, parseWithLocale, type Project, type ProjectColor } from '@ai-task-hub/shared';
+import {
+  createProjectSchema,
+  parseWithLocale,
+  type Project,
+  type ProjectColor,
+} from '@ai-task-hub/shared';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { currentLocale } from '@/i18n';
 import { useCreateProject, useUpdateProject } from '@/api/hooks';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -75,19 +86,36 @@ export function ProjectFormDialog({ open, onOpenChange, project }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? t('projectForm.editTitle') : t('projectForm.createTitle')}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? t('projectForm.editTitle') : t('projectForm.createTitle')}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="project-name">{t('projectForm.iconAndName')}</Label>
             <div className="flex items-center gap-3">
-              <IconPicker icon={icon} color={color} onIconChange={setIcon} onColorChange={setColor} />
-              <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('projectForm.namePlaceholder')} />
+              <IconPicker
+                icon={icon}
+                color={color}
+                onIconChange={setIcon}
+                onColorChange={setColor}
+              />
+              <Input
+                id="project-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t('projectForm.namePlaceholder')}
+              />
             </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="project-desc">{t('projectForm.description')}</Label>
-            <Textarea id="project-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+            <Textarea
+              id="project-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="project-tech">{t('projectForm.techStack')}</Label>

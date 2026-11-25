@@ -17,8 +17,12 @@ export const projects = sqliteTable('projects', {
   techStack: text('techStack').notNull().default(''),
   constraints: text('constraints').notNull().default(''),
   todoSeq: integer('todoSeq').notNull().default(0),
-  createdAt: integer('createdAt').notNull().$defaultFn(() => Date.now()),
-  updatedAt: integer('updatedAt').notNull().$defaultFn(() => Date.now()),
+  createdAt: integer('createdAt')
+    .notNull()
+    .$defaultFn(() => Date.now()),
+  updatedAt: integer('updatedAt')
+    .notNull()
+    .$defaultFn(() => Date.now()),
 });
 
 export const todos = sqliteTable(
@@ -32,12 +36,19 @@ export const todos = sqliteTable(
     title: text('title').notNull(),
     originalDescription: text('originalDescription').notNull(),
     requirementDoc: text('requirementDoc').notNull().default(''),
-    requirementStatus: text('requirementStatus').$type<RequirementStatus>().notNull().default('pending'),
+    requirementStatus: text('requirementStatus')
+      .$type<RequirementStatus>()
+      .notNull()
+      .default('pending'),
     executionStatus: text('executionStatus').$type<ExecutionStatus>().notNull().default('todo'),
     priority: text('priority').$type<Priority>().notNull().default('medium'),
     confirmedAt: integer('confirmedAt'),
-    createdAt: integer('createdAt').notNull().$defaultFn(() => Date.now()),
-    updatedAt: integer('updatedAt').notNull().$defaultFn(() => Date.now()),
+    createdAt: integer('createdAt')
+      .notNull()
+      .$defaultFn(() => Date.now()),
+    updatedAt: integer('updatedAt')
+      .notNull()
+      .$defaultFn(() => Date.now()),
   },
   (t) => [
     uniqueIndex('todos_project_number_unique').on(t.projectId, t.number),
@@ -54,7 +65,9 @@ export const messages = sqliteTable(
       .references(() => todos.id, { onDelete: 'cascade' }),
     role: text('role').$type<MessageRole>().notNull(),
     content: text('content').notNull(),
-    createdAt: integer('createdAt').notNull().$defaultFn(() => Date.now()),
+    createdAt: integer('createdAt')
+      .notNull()
+      .$defaultFn(() => Date.now()),
   },
   (t) => [index('messages_todo_created_idx').on(t.todoId, t.createdAt)],
 );
@@ -68,7 +81,9 @@ export const activities = sqliteTable(
       .references(() => todos.id, { onDelete: 'cascade' }),
     type: text('type').$type<ActivityType>().notNull(),
     payload: text('payload').notNull().default('{}'),
-    createdAt: integer('createdAt').notNull().$defaultFn(() => Date.now()),
+    createdAt: integer('createdAt')
+      .notNull()
+      .$defaultFn(() => Date.now()),
   },
   (t) => [index('activities_todo_created_idx').on(t.todoId, t.createdAt)],
 );

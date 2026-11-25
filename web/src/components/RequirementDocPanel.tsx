@@ -20,7 +20,6 @@ export function RequirementDocPanel({ todo }: RequirementDocPanelProps) {
   const [preview, setPreview] = useState(false);
   const [draft, setDraft] = useState('');
 
-
   function startEdit() {
     setDraft(todo.requirementDoc);
     setPreview(false);
@@ -37,7 +36,6 @@ export function RequirementDocPanel({ todo }: RequirementDocPanelProps) {
     }
   }
 
-
   if (editing) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
@@ -47,7 +45,9 @@ export function RequirementDocPanel({ todo }: RequirementDocPanelProps) {
               {draft ? (
                 <Markdown content={draft} />
               ) : (
-                <p className="py-10 text-center text-sm text-muted-foreground">{t('doc.emptyDraft')}</p>
+                <p className="py-10 text-center text-sm text-muted-foreground">
+                  {t('doc.emptyDraft')}
+                </p>
               )}
             </div>
           ) : (

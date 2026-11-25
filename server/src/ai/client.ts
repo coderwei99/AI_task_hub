@@ -19,7 +19,10 @@ function headers(cfg: AiSettings): Record<string, string> {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.apiKey}` };
 }
 
-export async function testConnection(cfg: AiSettings, locale: Locale = DEFAULT_LOCALE): Promise<TestConnectionResult> {
+export async function testConnection(
+  cfg: AiSettings,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<TestConnectionResult> {
   const start = Date.now();
   try {
     const res = await fetch(`${cfg.baseUrl.replace(/\/+$/, '')}/chat/completions`, {
@@ -43,7 +46,11 @@ export async function testConnection(cfg: AiSettings, locale: Locale = DEFAULT_L
     }
     return { ok: true, latencyMs };
   } catch (e) {
-    return { ok: false, latencyMs: Date.now() - start, error: localizeError(e, locale, 'connectionFailed') };
+    return {
+      ok: false,
+      latencyMs: Date.now() - start,
+      error: localizeError(e, locale, 'connectionFailed'),
+    };
   }
 }
 
@@ -80,7 +87,13 @@ export async function streamChatCompletion(
     const res = await fetch(endpoint(cfg), {
       method: 'POST',
       headers: headers(cfg),
-      body: JSON.stringify({ model: cfg.model, messages, stream: true, temperature: TEMPERATURE, max_tokens: MAX_TOKENS }),
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        stream: true,
+        temperature: TEMPERATURE,
+        max_tokens: MAX_TOKENS,
+      }),
       signal: controller.signal,
     });
     if (!res.ok || !res.body) {
@@ -122,7 +135,10 @@ export async function streamChatCompletion(
 
     return { text: full, finishReason };
   } catch (e) {
-    if (timedOut) throw new LocalizedError('aiTimeout', { seconds: Math.round((opts.idleTimeoutMs ?? 0) / 1000) });
+    if (timedOut)
+      throw new LocalizedError('aiTimeout', {
+        seconds: Math.round((opts.idleTimeoutMs ?? 0) / 1000),
+      });
     throw e;
   } finally {
     if (timer) clearTimeout(timer);

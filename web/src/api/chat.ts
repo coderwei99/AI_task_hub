@@ -8,7 +8,11 @@ export interface ChatStreamHandlers {
   signal?: AbortSignal;
 }
 
-export async function streamChat(todoId: string, content: string, h: ChatStreamHandlers): Promise<void> {
+export async function streamChat(
+  todoId: string,
+  content: string,
+  h: ChatStreamHandlers,
+): Promise<void> {
   const res = await fetch(`/api/todos/${todoId}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Accept-Language': currentLocale() },

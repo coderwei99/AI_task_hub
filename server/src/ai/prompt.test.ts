@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Message, Project, Todo } from '@ai-task-hub/shared';
-import { DOC_DELIMITER, SUFFICIENT_NO, SUFFICIENT_YES, buildMessages, buildSystemPrompt } from './prompt';
+import {
+  DOC_DELIMITER,
+  SUFFICIENT_NO,
+  SUFFICIENT_YES,
+  buildMessages,
+  buildSystemPrompt,
+} from './prompt';
 
 const project: Project = {
   id: 'p1',
@@ -57,7 +63,10 @@ describe('buildSystemPrompt', () => {
   });
 
   it('空字段降级为暂无/空', () => {
-    const empty = buildSystemPrompt({ ...project, description: '', techStack: '', constraints: '' }, { ...todo, requirementDoc: '' });
+    const empty = buildSystemPrompt(
+      { ...project, description: '', techStack: '', constraints: '' },
+      { ...todo, requirementDoc: '' },
+    );
     expect(empty).toContain('暂无');
     expect(empty).toContain('（空）');
   });

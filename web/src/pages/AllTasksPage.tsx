@@ -23,9 +23,15 @@ export default function AllTasksPage() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-        <span className="rounded-full bg-muted px-3 py-1">{t('tasks.countAll', { count: all.length })}</span>
-        <span className="rounded-full bg-muted px-3 py-1">{t('tasks.countPending', { count: pendingCount })}</span>
-        <span className="rounded-full bg-muted px-3 py-1">{t('tasks.countConfirmed', { count: confirmedCount })}</span>
+        <span className="rounded-full bg-muted px-3 py-1">
+          {t('tasks.countAll', { count: all.length })}
+        </span>
+        <span className="rounded-full bg-muted px-3 py-1">
+          {t('tasks.countPending', { count: pendingCount })}
+        </span>
+        <span className="rounded-full bg-muted px-3 py-1">
+          {t('tasks.countConfirmed', { count: confirmedCount })}
+        </span>
       </div>
 
       {isPending ? (
@@ -59,7 +65,9 @@ export default function AllTasksPage() {
                 >
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-muted-foreground">{formatTodoNumber(t.number)}</span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {formatTodoNumber(t.number)}
+                      </span>
                       <span className="font-medium">{t.title}</span>
                     </div>
                   </td>

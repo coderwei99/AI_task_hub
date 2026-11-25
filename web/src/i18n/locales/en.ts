@@ -152,8 +152,10 @@ export const en: Messages = {
     backToBoard: 'Back to board',
     projectFallback: 'Project',
     confirm: 'Confirm requirement',
-    confirmDisabledHint: 'Requires a non-empty document and no active AI response; confirmed requirements need no further confirmation',
-    confirmWarning: 'AI has not determined that the requirement is complete. Some details may remain unclear. You can still confirm and proceed with the current document.',
+    confirmDisabledHint:
+      'Requires a non-empty document and no active AI response; confirmed requirements need no further confirmation',
+    confirmWarning:
+      'AI has not determined that the requirement is complete. Some details may remain unclear. You can still confirm and proceed with the current document.',
     delete: 'Delete todo',
     editTitleHint: 'Click to edit title',
     titleSaveFailed: 'Failed to save title',
@@ -168,13 +170,15 @@ export const en: Messages = {
     deleteTitle: 'Delete “{{title}}”?',
     deleteDesc: 'Its chat history and activity will also be deleted. This cannot be undone.',
     confirmDialogTitle: 'Confirm requirement',
-    confirmDialogDesc: '“{{title}}” will be marked as confirmed and ready to copy to a coding agent. Please review the document summary below.',
+    confirmDialogDesc:
+      '“{{title}}” will be marked as confirmed and ready to copy to a coding agent. Please review the document summary below.',
     noDoc: 'No document content',
     confirmAction: 'Confirm',
   },
   chat: {
     header: 'AI chat',
-    emptyTitle: 'Describe your idea. AI will help clarify it and turn it into a requirement document.',
+    emptyTitle:
+      'Describe your idea. AI will help clarify it and turn it into a requirement document.',
     emptyHint: 'Multi-turn chat, with the document generated live on the right.',
     organizing: 'Organizing the requirement document…',
     placeholder: 'Add details or answer the AI… (Enter to send, Shift+Enter for newline)',
@@ -201,7 +205,8 @@ export const en: Messages = {
     viewVersion: 'View version',
     historyVersion: 'Historical version v{{number}}',
     restoreVersion: 'Restore this version',
-    restoreHint: 'Replace the current document with this version. Later history, chat and execution status are preserved. Confirmed documents require confirmation again. Restore is unavailable during AI generation.',
+    restoreHint:
+      'Replace the current document with this version. Later history, chat and execution status are preserved. Confirmed documents require confirmation again. Restore is unavailable during AI generation.',
     restored: 'Historical version restored',
     restoredFrom: 'Restored content from v{{number}}',
     saved: 'Document saved',
@@ -236,7 +241,8 @@ export const en: Messages = {
   settings: {
     title: 'Settings',
     aiTitle: 'AI model',
-    aiDesc: 'Compatible with the OpenAI Chat Completions API. Requirement content is sent to the AI service you configure, so use a provider you trust.',
+    aiDesc:
+      'Compatible with the OpenAI Chat Completions API. Requirement content is sent to the AI service you configure, so use a provider you trust.',
     loadFailed: 'Failed to load settings',
     apiKeyHint: 'Stored only in the local SQLite database, never uploaded to any third party.',
     model: 'Model',
@@ -248,12 +254,14 @@ export const en: Messages = {
     testing: 'Testing…',
     test: 'Test connection',
     dataTitle: 'Data storage',
-    dataDesc: 'Projects, todos, chats and settings are stored in a SQLite database on the computer running the server, with no cloud sync. When you use AI chat, relevant requirements and conversations are sent to your configured AI provider.',
+    dataDesc:
+      'Projects, todos, chats and settings are stored in a SQLite database on the computer running the server, with no cloud sync. When you use AI chat, relevant requirements and conversations are sent to your configured AI provider.',
     dataDir: 'Data directory',
     dbFile: 'Database file',
     copyPath: 'Copy path',
     pathCopied: 'Path copied',
-    backup: 'To back up, stop the server and copy the whole data directory (including data.db-wal and data.db-shm).',
+    backup:
+      'To back up, stop the server and copy the whole data directory (including data.db-wal and data.db-shm).',
     envHint: 'Set the AI_TASK_HUB_DATA_DIR environment variable to use a different directory.',
   },
   notFound: {

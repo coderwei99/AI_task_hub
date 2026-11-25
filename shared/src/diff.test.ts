@@ -12,10 +12,25 @@ describe('diffLines', () => {
     expect(rows[3]).toMatchObject({ oldLine: 3, newLine: 3 });
   });
   it('处理新增、删除、重复行、中文及换行', () => {
-    for (const [a, b] of [['', '新增'], ['删除', ''], ['A\nA\nB', 'A\nB\nB'], ['甲\r\n乙\n', '甲\n丙']]) {
+    for (const [a, b] of [
+      ['', '新增'],
+      ['删除', ''],
+      ['A\nA\nB', 'A\nB\nB'],
+      ['甲\r\n乙\n', '甲\n丙'],
+    ]) {
       const rows = diffLines(a, b);
-      expect(rows.filter((r) => r.kind !== 'add').map((r) => r.text).join('\n')).toBe(a.replace(/\r\n/g, '\n'));
-      expect(rows.filter((r) => r.kind !== 'remove').map((r) => r.text).join('\n')).toBe(b);
+      expect(
+        rows
+          .filter((r) => r.kind !== 'add')
+          .map((r) => r.text)
+          .join('\n'),
+      ).toBe(a.replace(/\r\n/g, '\n'));
+      expect(
+        rows
+          .filter((r) => r.kind !== 'remove')
+          .map((r) => r.text)
+          .join('\n'),
+      ).toBe(b);
     }
   });
   it('大文档降级仍保留完整内容', () => {

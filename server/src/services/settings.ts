@@ -22,7 +22,10 @@ export function writeSettings(cfg: AiSettings): void {
   ];
   db.transaction((tx) => {
     for (const [key, value] of entries) {
-      tx.insert(settings).values({ key, value }).onConflictDoUpdate({ target: settings.key, set: { value } }).run();
+      tx.insert(settings)
+        .values({ key, value })
+        .onConflictDoUpdate({ target: settings.key, set: { value } })
+        .run();
     }
   });
 }

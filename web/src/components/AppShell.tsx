@@ -73,7 +73,13 @@ export default function AppShell() {
   return (
     <div className="flex h-screen flex-col md:flex-row">
       <div className="flex h-14 shrink-0 items-center gap-2 border-b px-3 md:hidden">
-        <Button variant="ghost" size="icon" className="size-9" aria-label={t('nav.open')} onClick={() => setOpen(true)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-9"
+          aria-label={t('nav.open')}
+          onClick={() => setOpen(true)}
+        >
           <Menu />
         </Button>
         <span className="text-lg">🧩</span>

@@ -51,10 +51,12 @@ ${SUFFICIENT_YES} 或 ${SUFFICIENT_NO}
 全程使用中文。`;
 }
 
-export function buildMessages(project: Project, todo: Todo, history: Message[], options: ContextOptions = {}): ChatMessage[] {
+export function buildMessages(
+  project: Project,
+  todo: Todo,
+  history: Message[],
+  options: ContextOptions = {},
+): ChatMessage[] {
   const system: ChatMessage = { role: 'system', content: buildSystemPrompt(project, todo) };
-  return [
-    system,
-    ...selectHistory(history, [system], options),
-  ];
+  return [system, ...selectHistory(history, [system], options)];
 }

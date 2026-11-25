@@ -29,18 +29,46 @@ function seedTodo(requirementStatus: RequirementStatus, requirementDoc: string):
   const now = Date.now();
   const projectId = nanoid();
   db.insert(projects)
-    .values({ id: projectId, name: '测试项目', icon: '📁', description: '', techStack: '', constraints: '', todoSeq: 1, createdAt: now, updatedAt: now })
+    .values({
+      id: projectId,
+      name: '测试项目',
+      icon: '📁',
+      description: '',
+      techStack: '',
+      constraints: '',
+      todoSeq: 1,
+      createdAt: now,
+      updatedAt: now,
+    })
     .run();
   const todoId = nanoid();
   db.insert(todos)
-    .values({ id: todoId, projectId, number: 1, title: '测试任务', originalDescription: '原始描述', requirementDoc, requirementStatus, executionStatus: 'todo', priority: 'medium', confirmedAt: null, createdAt: now, updatedAt: now })
+    .values({
+      id: todoId,
+      projectId,
+      number: 1,
+      title: '测试任务',
+      originalDescription: '原始描述',
+      requirementDoc,
+      requirementStatus,
+      executionStatus: 'todo',
+      priority: 'medium',
+      confirmedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    })
     .run();
   return todoId;
 }
 
 const todoOf = (id: string) => db.select().from(todos).where(eq(todos.id, id)).get()!;
 const actsOf = (id: string) =>
-  db.select().from(activities).where(eq(activities.todoId, id)).orderBy(desc(activities.createdAt)).all();
+  db
+    .select()
+    .from(activities)
+    .where(eq(activities.todoId, id))
+    .orderBy(desc(activities.createdAt))
+    .all();
 const payloadOf = (a: { payload: string }) => JSON.parse(a.payload) as Record<string, unknown>;
 
 describe('文档历史版本', () => {
@@ -67,8 +95,11 @@ describe('文档历史版本', () => {
     patchTodo(id, { requirementDoc: 'A' });
     const version = documentVersions(id)[0];
     activeChats.set(id, new AbortController());
-    try { expect(() => restoreDocument(id, version.id)).toThrow(ApiError); }
-    finally { activeChats.delete(id); }
+    try {
+      expect(() => restoreDocument(id, version.id)).toThrow(ApiError);
+    } finally {
+      activeChats.delete(id);
+    }
     const other = seedTodo('pending', '');
     expect(() => restoreDocument(other, version.id)).toThrow(ApiError);
   });
@@ -107,7 +138,11 @@ describe('patchTodo 文档编辑副作用', () => {
       (a) => a.type === 'requirement_status_changed' && payloadOf(a).reason === 'doc_edit',
     );
     expect(transition).toBeTruthy();
-    expect(payloadOf(transition!)).toMatchObject({ from: 'confirmed', to: 'reconfirm', reason: 'doc_edit' });
+    expect(payloadOf(transition!)).toMatchObject({
+      from: 'confirmed',
+      to: 'reconfirm',
+      reason: 'doc_edit',
+    });
   });
 
   it('回退上一版：用最近 doc_updated 的 prevDoc 恢复文档，并再记录一次 doc_updated', () => {
@@ -146,7 +181,11 @@ describe('confirmTodo 确认门控', () => {
     const transition = acts.find(
       (a) => a.type === 'requirement_status_changed' && payloadOf(a).reason === 'user_confirm',
     );
-    expect(payloadOf(transition!)).toMatchObject({ from: 'ai_ready', to: 'confirmed', reason: 'user_confirm' });
+    expect(payloadOf(transition!)).toMatchObject({
+      from: 'ai_ready',
+      to: 'confirmed',
+      reason: 'user_confirm',
+    });
   });
 
   it('reconfirm 确认 → confirmed', () => {

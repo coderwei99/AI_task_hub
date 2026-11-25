@@ -39,7 +39,10 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 async function requestText(path: string): Promise<string> {
-  const res = await fetch(`/api${path}`, { method: 'GET', headers: { 'Accept-Language': currentLocale() } });
+  const res = await fetch(`/api${path}`, {
+    method: 'GET',
+    headers: { 'Accept-Language': currentLocale() },
+  });
   if (!res.ok) throw await toApiError(res);
   return res.text();
 }

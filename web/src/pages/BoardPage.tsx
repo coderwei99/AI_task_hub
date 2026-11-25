@@ -53,7 +53,9 @@ export default function BoardPage() {
     const isNotFound = error instanceof ApiClientError && error.status === 404;
     return (
       <div className="flex flex-col items-center gap-3 p-20 text-center">
-        <p className="text-muted-foreground">{isNotFound ? t('board.notFound') : t('board.loadFailed')}</p>
+        <p className="text-muted-foreground">
+          {isNotFound ? t('board.notFound') : t('board.loadFailed')}
+        </p>
         <div className="flex items-center gap-2">
           {!isNotFound && (
             <Button variant="outline" onClick={() => refetch()}>
@@ -101,15 +103,26 @@ export default function BoardPage() {
             <div className="flex items-center gap-2">
               <ProjectIcon icon={project.icon} color={project.color} />
               <h1 className="truncate text-xl font-semibold">{project.name}</h1>
-              <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditOpen(true)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7"
+                onClick={() => setEditOpen(true)}
+              >
                 <Pencil />
               </Button>
             </div>
             {project.description && (
-              <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{project.description}</p>
+              <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                {project.description}
+              </p>
             )}
             <p className="mt-1 text-xs text-muted-foreground">
-              {t('board.summary', { pending: pendingCount, polishing: polishingCount, confirmed: confirmedCount })}
+              {t('board.summary', {
+                pending: pendingCount,
+                polishing: polishingCount,
+                confirmed: confirmedCount,
+              })}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">

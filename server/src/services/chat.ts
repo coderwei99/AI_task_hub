@@ -34,12 +34,21 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
   if (!project) throw notFound('projectNotFound');
 
   const history = db.transaction((tx) => {
-    const userMessage: Message = { id: nanoid(), todoId, role: 'user', content, createdAt: Date.now() };
+    const userMessage: Message = {
+      id: nanoid(),
+      todoId,
+      role: 'user',
+      content,
+      createdAt: Date.now(),
+    };
     tx.insert(messages).values(userMessage).run();
 
     const nextStatus = nextRequirementStatus(todo.requirementStatus, 'user_message');
     if (nextStatus !== todo.requirementStatus) {
-      tx.update(todos).set({ requirementStatus: nextStatus, updatedAt: Date.now() }).where(eq(todos.id, todoId)).run();
+      tx.update(todos)
+        .set({ requirementStatus: nextStatus, updatedAt: Date.now() })
+        .where(eq(todos.id, todoId))
+        .run();
       logActivity(
         todoId,
         'requirement_status_changed',
@@ -47,16 +56,28 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
         tx,
       );
     }
-    return tx.select().from(messages).where(eq(messages.todoId, todoId)).orderBy(asc(messages.createdAt)).all();
+    return tx
+      .select()
+      .from(messages)
+      .where(eq(messages.todoId, todoId))
+      .orderBy(asc(messages.createdAt))
+      .all();
   });
 
-  const { text, finishReason } = await streamChatCompletion(cfg, buildMessages(project, todo, history), {
-    onDelta,
+  const { text, finishReason } = await streamChatCompletion(
+    cfg,
+    buildMessages(project, todo, history),
+    {
+      onDelta,
+      signal,
+      idleTimeoutMs: UPSTREAM_IDLE_TIMEOUT_MS,
+    },
+  );
+
+  const resolved = await resolveAssistantOutput(cfg, history, text, finishReason, {
     signal,
-    idleTimeoutMs: UPSTREAM_IDLE_TIMEOUT_MS,
+    context: buildSystemPrompt(project, todo),
   });
-
-  const resolved = await resolveAssistantOutput(cfg, history, text, finishReason, { signal, context: buildSystemPrompt(project, todo) });
 
   if (signal.aborted) throw new LocalizedError('chatAborted');
 
@@ -77,7 +98,12 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
     if (resolved.document !== null && resolved.document !== current.requirementDoc) {
       updates.requirementDoc = resolved.document;
       docUpdated = true;
-      logActivity(todoId, 'doc_updated', { source: 'ai', prevDoc: current.requirementDoc, document: resolved.document }, tx);
+      logActivity(
+        todoId,
+        'doc_updated',
+        { source: 'ai', prevDoc: current.requirementDoc, document: resolved.document },
+        tx,
+      );
     }
 
     let requirementStatus = current.requirementStatus;

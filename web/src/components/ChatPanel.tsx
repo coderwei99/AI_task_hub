@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 // 流式显示时分隔符可能只到达一半，需把结尾的部分分隔符也裁掉，避免 "===RE" 闪进气泡。
-function splitChatStream(text: string): { body: string; docPhase: boolean; } {
+function splitChatStream(text: string): { body: string; docPhase: boolean } {
   const idx = text.indexOf(DOC_DELIMITER);
   if (idx >= 0) return { body: text.slice(0, idx), docPhase: true };
   for (let n = Math.min(DOC_DELIMITER.length - 1, text.length); n > 0; n--) {
@@ -43,7 +43,9 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const configured = settings ? Boolean(settings.baseUrl && settings.apiKey && settings.model) : true;
+  const configured = settings
+    ? Boolean(settings.baseUrl && settings.apiKey && settings.model)
+    : true;
   const list = messages ?? [];
   const { body: displayText, docPhase } = splitChatStream(streamText);
   const empty = list.length === 0 && !pendingUser && !streaming;
@@ -103,7 +105,8 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
       setStreaming(false);
       setStreamText('');
       setPendingUser(null);
-      if (!controller.signal.aborted) toast.error(e instanceof Error ? e.message : t('chat.failed'));
+      if (!controller.signal.aborted)
+        toast.error(e instanceof Error ? e.message : t('chat.failed'));
       qc.invalidateQueries({ queryKey: queryKeys.messages(todo.id) });
       refreshAfterTurn();
     } finally {

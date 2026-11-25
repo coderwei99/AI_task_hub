@@ -22,7 +22,14 @@ export function ProjectIcon({ icon, color, size = 'md', className }: Props) {
 
   if (parsed.kind === 'emoji') {
     return (
-      <span className={cn('inline-flex shrink-0 items-center justify-center leading-none', s.tile, s.emoji, className)}>
+      <span
+        className={cn(
+          'inline-flex shrink-0 items-center justify-center leading-none',
+          s.tile,
+          s.emoji,
+          className,
+        )}
+      >
         {parsed.value}
       </span>
     );
@@ -41,7 +48,11 @@ export function ProjectIcon({ icon, color, size = 'md', className }: Props) {
       {Static ? (
         <Static className={s.icon} />
       ) : (
-        <DynamicIcon name={parsed.name as IconName} className={s.icon} fallback={() => <span className={s.icon} />} />
+        <DynamicIcon
+          name={parsed.name as IconName}
+          className={s.icon}
+          fallback={() => <span className={s.icon} />}
+        />
       )}
     </span>
   );

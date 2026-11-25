@@ -49,11 +49,15 @@ function ColumnShell({
     >
       <div className="mb-2 flex items-center justify-between px-1 text-sm font-medium">
         <span className="truncate">{label}</span>
-        <span className="ml-2 shrink-0 rounded-full bg-background px-2 text-xs text-muted-foreground">{count}</span>
+        <span className="ml-2 shrink-0 rounded-full bg-background px-2 text-xs text-muted-foreground">
+          {count}
+        </span>
       </div>
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
         {count === 0 ? (
-          <p className="px-1 py-6 text-center text-xs text-muted-foreground/60">{t('board.columnEmpty')}</p>
+          <p className="px-1 py-6 text-center text-xs text-muted-foreground/60">
+            {t('board.columnEmpty')}
+          </p>
         ) : (
           children
         )}
@@ -63,7 +67,9 @@ function ColumnShell({
 }
 
 function DraggableCard({ todo, onClick }: { todo: Todo; onClick: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: todo.id });
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: todo.id,
+  });
   return (
     <div
       ref={setNodeRef}
@@ -108,7 +114,12 @@ export function BoardColumns({ view, columns, onCardClick, onMove }: Props) {
         {columns.map((col) => (
           <ColumnShell key={col.key} label={col.label} count={col.items.length}>
             {col.items.map((todo) => (
-              <TodoCard key={todo.id} todo={todo} view="requirement" onClick={() => onCardClick(todo)} />
+              <TodoCard
+                key={todo.id}
+                todo={todo}
+                view="requirement"
+                onClick={() => onCardClick(todo)}
+              />
             ))}
           </ColumnShell>
         ))}
@@ -127,7 +138,12 @@ export function BoardColumns({ view, columns, onCardClick, onMove }: Props) {
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} autoScroll={false} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      autoScroll={false}
+      onDragEnd={handleDragEnd}
+    >
       <div className="grid flex-1 grid-flow-col gap-3 overflow-x-auto auto-cols-[minmax(12rem,1fr)] md:auto-cols-[minmax(0,1fr)] md:overflow-hidden">
         {columns.map((col) => (
           <DroppableColumn key={col.key} column={col} onCardClick={onCardClick} />

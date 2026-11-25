@@ -12,7 +12,9 @@ export const LANGUAGE_OPTIONS: { value: Locale; label: string }[] = [
 ];
 
 function initialLocale(): Locale {
-  return matchLocale(localStorage.getItem(STORAGE_KEY) ?? '') ?? matchLocale(navigator.language) ?? 'en';
+  return (
+    matchLocale(localStorage.getItem(STORAGE_KEY) ?? '') ?? matchLocale(navigator.language) ?? 'en'
+  );
 }
 
 function syncHtmlLang(lng: string) {
