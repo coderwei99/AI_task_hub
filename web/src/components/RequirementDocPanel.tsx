@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, Pencil, Save, Undo2, X } from 'lucide-react';
+import { Eye, Pencil, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import type { Activity, Todo } from '@ai-task-hub/shared';
@@ -13,16 +13,13 @@ interface RequirementDocPanelProps {
   activities: Activity[];
 }
 
-export function RequirementDocPanel({ todo, activities }: RequirementDocPanelProps) {
+export function RequirementDocPanel({ todo }: RequirementDocPanelProps) {
   const { t } = useTranslation();
   const updateTodo = useUpdateTodo();
   const [editing, setEditing] = useState(false);
   const [preview, setPreview] = useState(false);
   const [draft, setDraft] = useState('');
 
-  const latestDocUpdate = activities.find((a) => a.type === 'doc_updated');
-  const prevDoc = latestDocUpdate?.payload.prevDoc;
-  const canRollback = typeof prevDoc === 'string' && prevDoc.length > 0;
 
   function startEdit() {
     setDraft(todo.requirementDoc);
@@ -40,15 +37,6 @@ export function RequirementDocPanel({ todo, activities }: RequirementDocPanelPro
     }
   }
 
-  async function rollback() {
-    if (typeof prevDoc !== 'string') return;
-    try {
-      await updateTodo.mutateAsync({ id: todo.id, input: { requirementDoc: prevDoc } });
-      toast.success(t('doc.rolledBack'));
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t('doc.rollbackFailed'));
-    }
-  }
 
   if (editing) {
     return (
@@ -99,11 +87,6 @@ export function RequirementDocPanel({ todo, activities }: RequirementDocPanelPro
         )}
       </div>
       <div className="flex items-center justify-end gap-2 border-t p-2">
-        {canRollback && (
-          <Button variant="outline" size="sm" onClick={rollback} disabled={updateTodo.isPending}>
-            <Undo2 /> {t('doc.rollback')}
-          </Button>
-        )}
         <Button variant="outline" size="sm" onClick={startEdit}>
           <Pencil /> {t('doc.editDoc')}
         </Button>

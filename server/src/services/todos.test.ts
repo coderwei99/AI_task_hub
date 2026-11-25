@@ -15,6 +15,7 @@ import { activities, projects, todos } from '../db/schema';
 import { ApiError } from '../lib/errors';
 import { confirmTodo, patchTodo } from './todos';
 import { activeChats } from './active-chats';
+import { documentVersions, restoreDocument } from './versions';
 
 beforeAll(() => {
   runMigrations();
@@ -41,6 +42,37 @@ const todoOf = (id: string) => db.select().from(todos).where(eq(todos.id, id)).g
 const actsOf = (id: string) =>
   db.select().from(activities).where(eq(activities.todoId, id)).orderBy(desc(activities.createdAt)).all();
 const payloadOf = (a: { payload: string }) => JSON.parse(a.payload) as Record<string, unknown>;
+
+describe('文档历史版本', () => {
+  it('A→B→C 可恢复 A 再恢复 C，保留全部版本且不影响执行状态', () => {
+    const id = seedTodo('polishing', '');
+    patchTodo(id, { requirementDoc: 'A' });
+    patchTodo(id, { requirementDoc: 'B' });
+    patchTodo(id, { requirementDoc: 'C' });
+    const versions = documentVersions(id);
+    expect(versions.map((v) => v.document)).toEqual(['A', 'B', 'C']);
+    confirmTodo(id);
+    expect(restoreDocument(id, versions[0].id).requirementStatus).toBe('reconfirm');
+    expect(documentVersions(id).map((v) => v.document)).toEqual(['A', 'B', 'C', 'A']);
+    restoreDocument(id, versions[2].id);
+    expect(todoOf(id).requirementDoc).toBe('C');
+    expect(todoOf(id).executionStatus).toBe('todo');
+    expect(documentVersions(id)).toHaveLength(5);
+    restoreDocument(id, versions[2].id);
+    expect(documentVersions(id)).toHaveLength(5);
+  });
+
+  it('生成期间及其他任务的版本不能恢复', () => {
+    const id = seedTodo('polishing', '');
+    patchTodo(id, { requirementDoc: 'A' });
+    const version = documentVersions(id)[0];
+    activeChats.set(id, new AbortController());
+    try { expect(() => restoreDocument(id, version.id)).toThrow(ApiError); }
+    finally { activeChats.delete(id); }
+    const other = seedTodo('pending', '');
+    expect(() => restoreDocument(other, version.id)).toThrow(ApiError);
+  });
+});
 
 describe('patchTodo 文档编辑副作用', () => {
   it('编辑文档记录 doc_updated（source=user，prevDoc 为旧全文）', () => {

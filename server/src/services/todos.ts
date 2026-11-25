@@ -48,7 +48,7 @@ export function createTodo(projectId: string, input: CreateTodoInput): Todo {
   });
 }
 
-export function patchTodo(id: string, input: UpdateTodoInput): Todo {
+export function patchTodo(id: string, input: UpdateTodoInput, restoredFrom?: number): Todo {
   return db.transaction((tx) => {
     const existing = tx.select().from(todos).where(eq(todos.id, id)).get();
     if (!existing) throw notFound('todoNotFound');
@@ -65,7 +65,7 @@ export function patchTodo(id: string, input: UpdateTodoInput): Todo {
 
     if (input.requirementDoc !== undefined && input.requirementDoc !== existing.requirementDoc) {
       updates.requirementDoc = input.requirementDoc;
-      logActivity(id, 'doc_updated', { source: 'user', prevDoc: existing.requirementDoc }, tx);
+      logActivity(id, 'doc_updated', { source: restoredFrom ? 'restore' : 'user', prevDoc: existing.requirementDoc, document: input.requirementDoc, restoredFrom }, tx);
       const nextStatus = nextRequirementStatus(existing.requirementStatus, 'doc_edit');
       if (nextStatus !== existing.requirementStatus) {
         updates.requirementStatus = nextStatus;

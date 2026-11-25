@@ -77,7 +77,7 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
     if (resolved.document !== null && resolved.document !== current.requirementDoc) {
       updates.requirementDoc = resolved.document;
       docUpdated = true;
-      logActivity(todoId, 'doc_updated', { source: 'ai', prevDoc: current.requirementDoc }, tx);
+      logActivity(todoId, 'doc_updated', { source: 'ai', prevDoc: current.requirementDoc, document: resolved.document }, tx);
     }
 
     let requirementStatus = current.requirementStatus;

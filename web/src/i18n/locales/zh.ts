@@ -190,6 +190,12 @@ export const zh = {
     confirmedBanner: '需求已确认，可 Copy 交给 Coding Agent',
   },
   doc: {
+    viewVersion: '查看版本',
+    historyVersion: '历史版本 v{{number}}',
+    restoreVersion: '恢复此版本',
+    restoreHint: '将用此版本替换当前需求文档。后续历史记录会保留，聊天记录和任务执行状态不会改变。已确认的文档恢复后需重新确认。AI 生成期间不可恢复。',
+    restored: '已恢复历史版本',
+    restoredFrom: '恢复了 v{{number}} 的内容',
     saved: '需求文档已保存',
     saveFailed: '文档保存失败',
     rolledBack: '已回退到上一版',

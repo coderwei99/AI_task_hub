@@ -252,7 +252,7 @@ export default function TodoDetailPage() {
             <RequirementDocPanel todo={todo} activities={activities ?? []} />
           </TabsContent>
           <TabsContent value="activity" className="min-h-0 flex-1 overflow-y-auto p-4">
-            <ActivityTimeline activities={activities ?? []} />
+            <ActivityTimeline activities={activities ?? []} todoId={todo.id} currentDocument={todo.requirementDoc} generating={generating} />
           </TabsContent>
         </Tabs>
       ) : (
@@ -271,7 +271,7 @@ export default function TodoDetailPage() {
                 <RequirementDocPanel todo={todo} activities={activities ?? []} />
               </TabsContent>
               <TabsContent value="activity" className="min-h-0 flex-1 overflow-y-auto p-4">
-                <ActivityTimeline activities={activities ?? []} />
+                <ActivityTimeline activities={activities ?? []} todoId={todo.id} currentDocument={todo.requirementDoc} generating={generating} />
               </TabsContent>
             </Tabs>
           </div>

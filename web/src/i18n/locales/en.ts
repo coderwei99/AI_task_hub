@@ -192,6 +192,12 @@ export const en: Messages = {
     confirmedBanner: 'Requirement confirmed. Copy it to your coding agent.',
   },
   doc: {
+    viewVersion: 'View version',
+    historyVersion: 'Historical version v{{number}}',
+    restoreVersion: 'Restore this version',
+    restoreHint: 'Replace the current document with this version. Later history, chat and execution status are preserved. Confirmed documents require confirmation again. Restore is unavailable during AI generation.',
+    restored: 'Historical version restored',
+    restoredFrom: 'Restored content from v{{number}}',
     saved: 'Document saved',
     saveFailed: 'Failed to save document',
     rolledBack: 'Reverted to the previous version',

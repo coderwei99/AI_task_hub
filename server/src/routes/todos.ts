@@ -5,6 +5,7 @@ import { db } from '../db';
 import { activities, messages, todos } from '../db/schema';
 import { parseBody } from '../lib/validate';
 import { exportTodoMarkdown } from '../services/export';
+import { documentVersions, restoreDocument } from '../services/versions';
 import { confirmTodo, createTodo, getTodoOrThrow, patchTodo } from '../services/todos';
 
 export const projectTodoRoutes = new Hono();
@@ -26,6 +27,9 @@ projectTodoRoutes.post('/:projectId/todos', async (c) => {
 });
 
 export const todoRoutes = new Hono();
+
+todoRoutes.get('/:id/versions', (c) => c.json(documentVersions(c.req.param('id'))));
+todoRoutes.post('/:id/versions/:versionId/restore', (c) => c.json(restoreDocument(c.req.param('id'), c.req.param('versionId'))));
 
 todoRoutes.get('/:id', (c) => c.json(getTodoOrThrow(c.req.param('id'))));
 
