@@ -16,12 +16,12 @@ export function nextRequirementStatus(current: RequirementStatus, event: Require
     case 'ai_insufficient':
       return current;
     case 'user_confirm':
-      return current === 'ai_ready' || current === 'reconfirm' ? 'confirmed' : current;
+      return 'confirmed';
     case 'doc_edit':
       return current === 'confirmed' ? 'reconfirm' : current;
   }
 }
 
-export function canConfirm(current: RequirementStatus): boolean {
-  return current === 'ai_ready' || current === 'reconfirm';
+export function canConfirm(current: RequirementStatus, document: string, generating = false): boolean {
+  return current !== 'confirmed' && document.trim().length > 0 && !generating;
 }

@@ -6,10 +6,10 @@ import { parseBody } from '../lib/validate';
 import { runChatTurn } from '../services/chat';
 import { isAiConfigured, readSettings } from '../services/settings';
 import { getTodoOrThrow } from '../services/todos';
+import { activeChats } from '../services/active-chats';
 
 export const chatRoutes = new Hono();
 
-const activeChats = new Map<string, AbortController>();
 
 chatRoutes.post('/:id/chat', async (c) => {
   const id = c.req.param('id');

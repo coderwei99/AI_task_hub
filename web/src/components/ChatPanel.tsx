@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 // 流式显示时分隔符可能只到达一半，需把结尾的部分分隔符也裁掉，避免 "===RE" 闪进气泡。
-function splitChatStream(text: string): { body: string; docPhase: boolean } {
+function splitChatStream(text: string): { body: string; docPhase: boolean; } {
   const idx = text.indexOf(DOC_DELIMITER);
   if (idx >= 0) return { body: text.slice(0, idx), docPhase: true };
   for (let n = Math.min(DOC_DELIMITER.length - 1, text.length); n > 0; n--) {
@@ -27,9 +27,10 @@ function splitChatStream(text: string): { body: string; docPhase: boolean } {
 interface ChatPanelProps {
   todo: Todo;
   onConfirm: () => void;
+  onGeneratingChange: (value: boolean) => void;
 }
 
-export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
+export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProps) {
   const { t } = useTranslation();
   const { data: messages } = useMessages(todo.id);
   const { data: settings } = useSettings();
@@ -53,6 +54,10 @@ export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
   }, [messages, streamText, pendingUser]);
 
   useEffect(() => () => abortRef.current?.abort(), []);
+  useEffect(() => {
+    onGeneratingChange(streaming);
+    return () => onGeneratingChange(false);
+  }, [streaming, onGeneratingChange]);
 
   function refreshAfterTurn() {
     qc.invalidateQueries({ queryKey: queryKeys.todo(todo.id) });
@@ -102,6 +107,7 @@ export function ChatPanel({ todo, onConfirm }: ChatPanelProps) {
       qc.invalidateQueries({ queryKey: queryKeys.messages(todo.id) });
       refreshAfterTurn();
     } finally {
+      setStreaming(false);
       abortRef.current = null;
     }
   }
@@ -235,7 +241,8 @@ function StatusBanner({
   if (status === 'polishing') {
     return (
       <div className="flex items-center gap-2 border-t bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" /> {t('chat.polishing')}
+        {streaming && <Loader2 className="size-4 animate-spin" />}
+        {streaming ? t('chat.polishing') : t('chat.needsInput')}
       </div>
     );
   }

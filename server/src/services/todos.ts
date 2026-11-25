@@ -11,6 +11,7 @@ import { db } from '../db';
 import { projects, todos } from '../db/schema';
 import { conflict, notFound } from '../lib/errors';
 import { logActivity } from './activities';
+import { activeChats } from './active-chats';
 
 export function getTodoOrThrow(id: string): Todo {
   const todo = db.select().from(todos).where(eq(todos.id, id)).get();
@@ -86,7 +87,7 @@ export function confirmTodo(id: string): Todo {
   return db.transaction((tx) => {
     const existing = tx.select().from(todos).where(eq(todos.id, id)).get();
     if (!existing) throw notFound('todoNotFound');
-    if (!canConfirm(existing.requirementStatus)) {
+    if (!canConfirm(existing.requirementStatus, existing.requirementDoc, activeChats.has(id))) {
       throw conflict('todoNotConfirmable');
     }
     const now = Date.now();

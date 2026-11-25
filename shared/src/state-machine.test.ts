@@ -10,14 +10,14 @@ const TABLE: Record<RequirementStatus, Record<RequirementEvent, RequirementStatu
     user_message: 'polishing',
     ai_sufficient: 'pending',
     ai_insufficient: 'pending',
-    user_confirm: 'pending',
+    user_confirm: 'confirmed',
     doc_edit: 'pending',
   },
   polishing: {
     user_message: 'polishing',
     ai_sufficient: 'ai_ready',
     ai_insufficient: 'polishing',
-    user_confirm: 'polishing',
+    user_confirm: 'confirmed',
     doc_edit: 'polishing',
   },
   ai_ready: {
@@ -64,11 +64,11 @@ describe('不变量 1：confirmed 只能由 user_confirm 到达', () => {
     }
   });
 
-  it('user_confirm 仅能从 ai_ready / reconfirm 到达 confirmed', () => {
+  it('user_confirm 可由用户从任意状态确认，文档与生成门控由 canConfirm 检查', () => {
     expect(nextRequirementStatus('ai_ready', 'user_confirm')).toBe('confirmed');
     expect(nextRequirementStatus('reconfirm', 'user_confirm')).toBe('confirmed');
-    expect(nextRequirementStatus('pending', 'user_confirm')).toBe('pending');
-    expect(nextRequirementStatus('polishing', 'user_confirm')).toBe('polishing');
+    expect(nextRequirementStatus('pending', 'user_confirm')).toBe('confirmed');
+    expect(nextRequirementStatus('polishing', 'user_confirm')).toBe('confirmed');
   });
 });
 
@@ -96,9 +96,11 @@ describe('不变量 2：AI 输出绝不直接到 confirmed，且只允许 polish
 });
 
 describe('canConfirm 门控', () => {
-  it('仅 ai_ready / reconfirm 可确认', () => {
+  it('非 confirmed 状态有文档且未在生成时均可确认', () => {
     for (const status of REQUIREMENT_STATUSES) {
-      expect(canConfirm(status)).toBe(status === 'ai_ready' || status === 'reconfirm');
+      expect(canConfirm(status, '# 文档')).toBe(status !== 'confirmed');
+      expect(canConfirm(status, '  ')).toBe(false);
+      expect(canConfirm(status, '# 文档', true)).toBe(false);
     }
   });
 });

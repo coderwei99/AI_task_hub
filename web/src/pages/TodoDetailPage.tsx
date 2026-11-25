@@ -67,6 +67,7 @@ export default function TodoDetailPage() {
   const [titleDraft, setTitleDraft] = useState('');
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   function startEditTitle() {
     if (!todo) return;
@@ -132,7 +133,7 @@ export default function TodoDetailPage() {
     );
   }
 
-  const confirmable = canConfirm(todo.requirementStatus);
+  const confirmable = canConfirm(todo.requirementStatus, todo.requirementDoc, generating);
 
   return (
     <div className="flex h-full flex-col">
@@ -245,7 +246,7 @@ export default function TodoDetailPage() {
             </TabsList>
           </div>
           <TabsContent value="chat" className="flex min-h-0 flex-1 flex-col">
-            <ChatPanel todo={todo} onConfirm={handleConfirm} />
+            <ChatPanel todo={todo} onConfirm={handleConfirm} onGeneratingChange={setGenerating} />
           </TabsContent>
           <TabsContent value="doc" className="flex min-h-0 flex-1 flex-col">
             <RequirementDocPanel todo={todo} activities={activities ?? []} />
@@ -256,7 +257,7 @@ export default function TodoDetailPage() {
         </Tabs>
       ) : (
         <div className="flex min-h-0 flex-1">
-          <ChatPanel todo={todo} onConfirm={handleConfirm} />
+          <ChatPanel todo={todo} onConfirm={handleConfirm} onGeneratingChange={setGenerating} />
 
           <div className="flex w-[45%] min-w-0 flex-col">
             <Tabs defaultValue="doc" className="flex min-h-0 flex-1 flex-col gap-0">
@@ -300,6 +301,9 @@ export default function TodoDetailPage() {
               {t('todo.confirmDialogDesc', { title: todo.title })}
             </DialogDescription>
           </DialogHeader>
+          {todo.requirementStatus !== 'ai_ready' && todo.requirementStatus !== 'reconfirm' && (
+            <p className="text-sm text-amber-700 dark:text-amber-400">{t('todo.confirmWarning')}</p>
+          )}
           <div className="max-h-60 overflow-y-auto rounded-md border bg-muted/30 p-3">
             {todo.requirementDoc ? (
               <Markdown content={todo.requirementDoc} className="text-sm" />
@@ -311,7 +315,7 @@ export default function TodoDetailPage() {
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={doConfirm} disabled={confirmTodo.isPending}>
+            <Button onClick={doConfirm} disabled={confirmTodo.isPending || !confirmable}>
               <Check /> {t('todo.confirmAction')}
             </Button>
           </DialogFooter>

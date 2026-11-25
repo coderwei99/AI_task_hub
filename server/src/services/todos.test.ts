@@ -14,6 +14,7 @@ import { db, runMigrations } from '../db';
 import { activities, projects, todos } from '../db/schema';
 import { ApiError } from '../lib/errors';
 import { confirmTodo, patchTodo } from './todos';
+import { activeChats } from './active-chats';
 
 beforeAll(() => {
   runMigrations();
@@ -121,8 +122,32 @@ describe('confirmTodo 确认门控', () => {
     expect(confirmTodo(id).requirementStatus).toBe('confirmed');
   });
 
-  it('pending/polishing/confirmed 确认 → 409，状态不变', () => {
-    for (const status of ['pending', 'polishing', 'confirmed'] as RequirementStatus[]) {
+  it('pending/polishing 有文档时允许用户确认', () => {
+    for (const status of ['pending', 'polishing'] as RequirementStatus[]) {
+      expect(confirmTodo(seedTodo(status, '# 文档')).requirementStatus).toBe('confirmed');
+    }
+  });
+
+  it('生成期间拒绝确认，结束后可确认', () => {
+    const id = seedTodo('polishing', '# 文档');
+    activeChats.set(id, new AbortController());
+    try {
+      expect(() => confirmTodo(id)).toThrow(ApiError);
+      expect(todoOf(id).requirementStatus).toBe('polishing');
+    } finally {
+      activeChats.delete(id);
+    }
+    expect(confirmTodo(id).requirementStatus).toBe('confirmed');
+  });
+
+  it('所有状态的空白文档都不允许确认', () => {
+    for (const status of ['pending', 'polishing', 'ai_ready', 'reconfirm'] as RequirementStatus[]) {
+      expect(() => confirmTodo(seedTodo(status, '  \n '))).toThrow(ApiError);
+    }
+  });
+
+  it('confirmed 重复确认 → 409，状态不变', () => {
+    for (const status of ['confirmed'] as RequirementStatus[]) {
       const id = seedTodo(status, '# 文档');
       let err: unknown;
       try {
