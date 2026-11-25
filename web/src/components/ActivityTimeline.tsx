@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { toast } from 'sonner';
 import { Markdown } from './Markdown';
+import { DocumentDiff } from './DocumentDiff';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
 
@@ -52,6 +53,7 @@ function describe(a: Activity, t: TFunction): { icon: React.ReactNode; text: str
 export function ActivityTimeline({ activities, todoId, currentDocument, generating = false }: { activities: Activity[]; todoId?: string; currentDocument?: string; generating?: boolean }) {
   const { t } = useTranslation();
   const [selected, setSelected] = useState<Version | null>(null);
+  const [view, setView] = useState<'diff' | 'preview'>('diff');
   const qc = useQueryClient();
   const { data: versions = [] } = useQuery({ queryKey: ['versions', todoId, activities], queryFn: () => api.get<Version[]>(`/todos/${todoId}/versions`), enabled: !!todoId });
   const restore = useMutation({
@@ -87,20 +89,24 @@ export function ActivityTimeline({ activities, todoId, currentDocument, generati
             <div className="min-w-0 flex-1 pt-0.5">
               <p className={cn('text-sm', highlight && 'font-medium text-green-700 dark:text-green-400')}>{version?.restoredFrom ? t('doc.restoredFrom', { number: version.restoredFrom }) : text}{version && ` · v${version.number}`}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">{relativeTime(a.createdAt)}</p>
-              {version && <Button size="sm" variant="ghost" onClick={() => setSelected(version)}>{t('doc.viewVersion')}</Button>}
+              {version && <Button size="sm" variant="ghost" onClick={() => { setSelected(version); setView('diff'); }}>{t('doc.viewVersion')}</Button>}
             </div>
           </li>
         );
       })}
     </ol>
     <Dialog open={!!selected} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="w-[96vw] max-w-[96vw] min-w-0 max-h-[92dvh] overflow-y-auto sm:max-w-[min(96vw,1440px)]">
         <DialogHeader>
           <DialogTitle>{t('doc.historyVersion', { number: selected?.number })}</DialogTitle>
           <DialogDescription>{t('doc.restoreHint')}</DialogDescription>
         </DialogHeader>
         {selected && <p className="text-xs text-muted-foreground">{new Date(selected.createdAt).toLocaleString()} · {selected.restoredFrom ? t('doc.restoredFrom', { number: selected.restoredFrom }) : t(selected.source === 'ai' ? 'activity.sourceAi' : 'activity.sourceUser')}</p>}
-        <div className="max-h-[60vh] overflow-y-auto">{selected?.document ? <Markdown content={selected.document} /> : <p>{t('doc.emptyDraft')}</p>}</div>
+        <div className="flex gap-2" role="group" aria-label={t('doc.versionView')}>
+          <Button size="sm" variant={view === 'diff' ? 'secondary' : 'ghost'} aria-pressed={view === 'diff'} onClick={() => setView('diff')}>{t('doc.diff')}</Button>
+          <Button size="sm" variant={view === 'preview' ? 'secondary' : 'ghost'} aria-pressed={view === 'preview'} onClick={() => setView('preview')}>{t('doc.preview')}</Button>
+        </div>
+        <div className="max-h-[55vh] min-w-0 overflow-auto">{view === 'diff' ? <DocumentDiff before={currentDocument ?? ''} after={selected?.document ?? ''} /> : selected?.document ? <Markdown content={selected.document} /> : <p>{t('doc.emptyDraft')}</p>}</div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setSelected(null)}>{t('common.cancel')}</Button>
           <Button disabled={generating || restore.isPending || selected?.document === currentDocument} onClick={() => selected && restore.mutate(selected)}>{t('doc.restoreVersion')}</Button>

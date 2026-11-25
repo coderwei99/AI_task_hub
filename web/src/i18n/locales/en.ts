@@ -192,6 +192,12 @@ export const en: Messages = {
     confirmedBanner: 'Requirement confirmed. Copy it to your coding agent.',
   },
   doc: {
+    currentDocument: 'Current document (before restore)',
+    targetDocument: 'Historical version (after restore)',
+    diff: 'Diff',
+    versionView: 'Version view',
+    diffDirection: 'Current → historical version (red: removed, green: added)',
+    noChanges: 'Identical to the current document. No restore needed.',
     viewVersion: 'View version',
     historyVersion: 'Historical version v{{number}}',
     restoreVersion: 'Restore this version',

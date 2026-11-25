@@ -190,6 +190,12 @@ export const zh = {
     confirmedBanner: '需求已确认，可 Copy 交给 Coding Agent',
   },
   doc: {
+    currentDocument: '当前文档（恢复前）',
+    targetDocument: '历史版本（恢复后）',
+    diff: '差异对比',
+    versionView: '版本查看方式',
+    diffDirection: '当前文档 → 历史版本（红色删除，绿色新增）',
+    noChanges: '与当前文档内容相同，无需恢复。',
     viewVersion: '查看版本',
     historyVersion: '历史版本 v{{number}}',
     restoreVersion: '恢复此版本',
