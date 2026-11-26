@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Check, Loader2, Send, Settings2, Sparkles, Square } from 'lucide-react';
@@ -41,6 +41,8 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
   const [streamText, setStreamText] = useState('');
   const [pendingUser, setPendingUser] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const streamBuffer = useRef('');
+  const streamTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const configured = settings
@@ -55,7 +57,16 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, streamText, pendingUser]);
 
-  useEffect(() => () => abortRef.current?.abort(), []);
+  useEffect(
+    () => () => {
+      abortRef.current?.abort();
+      abortRef.current = null;
+      clearTimeout(streamTimer.current);
+      streamTimer.current = undefined;
+      streamBuffer.current = '';
+    },
+    [],
+  );
   useEffect(() => {
     onGeneratingChange(streaming);
     return () => onGeneratingChange(false);
@@ -70,9 +81,21 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
     qc.invalidateQueries({ queryKey: ['project'] });
   }
 
+  function clearStreamBuffer() {
+    clearTimeout(streamTimer.current);
+    streamTimer.current = undefined;
+    streamBuffer.current = '';
+  }
+
+  function flushStreamBuffer() {
+    const text = streamBuffer.current;
+    clearStreamBuffer();
+    if (text) setStreamText((previous) => previous + text);
+  }
+
   async function send() {
     const content = input.trim();
-    if (!content || streaming || !configured) return;
+    if (!content || abortRef.current || !configured) return;
     setInput('');
     setPendingUser(content);
     setStreaming(true);
@@ -80,29 +103,37 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
     const controller = new AbortController();
     abortRef.current = controller;
     try {
+      let finishTurn: (() => Promise<void>) | undefined;
       await streamChat(todo.id, content, {
         signal: controller.signal,
-        onDelta: (text) => setStreamText((prev) => prev + text),
-        onDone: async (ev) => {
-          await qc.invalidateQueries({ queryKey: queryKeys.messages(todo.id) });
-          setPendingUser(null);
-          setStreamText('');
-          setStreaming(false);
-          refreshAfterTurn();
-          if (ev.parseWarning) toast.warning(t('chat.parseWarning'));
-          else if (ev.docRecovered) toast.info(t('chat.docRecovered'));
+        onDelta: (text) => {
+          if (controller.signal.aborted) return;
+          streamBuffer.current += text;
+          streamTimer.current ??= setTimeout(flushStreamBuffer, 50);
+        },
+        onDone: (ev) => {
+          flushStreamBuffer();
+          finishTurn = async () => {
+            await qc.invalidateQueries({ queryKey: queryKeys.messages(todo.id) });
+            if (abortRef.current !== controller) return;
+            setPendingUser(null);
+            setStreamText('');
+            setStreaming(false);
+            refreshAfterTurn();
+            if (ev.parseWarning) toast.warning(t('chat.parseWarning'));
+            else if (ev.docRecovered) toast.info(t('chat.docRecovered'));
+          };
         },
         onError: (message) => {
-          setInput(content);
-          setStreaming(false);
-          setStreamText('');
-          setPendingUser(null);
-          toast.error(message);
-          qc.invalidateQueries({ queryKey: queryKeys.messages(todo.id) });
-          refreshAfterTurn();
+          finishTurn = async () => {
+            throw new Error(message);
+          };
         },
       });
+      await finishTurn?.();
     } catch (e) {
+      if (abortRef.current !== controller) return;
+      clearStreamBuffer();
       if (!controller.signal.aborted) setInput(content);
       setStreaming(false);
       setStreamText('');
@@ -112,8 +143,11 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
       qc.invalidateQueries({ queryKey: queryKeys.messages(todo.id) });
       refreshAfterTurn();
     } finally {
-      setStreaming(false);
-      abortRef.current = null;
+      if (abortRef.current === controller) {
+        clearStreamBuffer();
+        setStreaming(false);
+        abortRef.current = null;
+      }
     }
   }
 
@@ -191,11 +225,12 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
   );
 
   function stop() {
+    clearStreamBuffer();
     abortRef.current?.abort();
   }
 }
 
-function Bubble({
+const Bubble = memo(function Bubble({
   role,
   content,
   streaming,
@@ -231,7 +266,7 @@ function Bubble({
       </div>
     </div>
   );
-}
+});
 
 function StatusBanner({
   status,
