@@ -108,14 +108,23 @@ test('生成、确认、对比与导出需求，模型断流后继续编辑和�
   }
 });
 
-test('导入 Markdown 草稿、下载单条及项目文档', async ({ page }) => {
+test('导入 Markdown 草稿、下载单条及项目文档，并组合筛选任务', async ({ page }) => {
   const dataDir = mkdtempSync(join(tmpdir(), 'ath-markdown-'));
   try {
     await withServer(dataDir, async (url: string) => {
-      const response = await page.request.post(`${url}/api/projects`, { data: { name: '文档项目' } });
-      expect(response.ok()).toBe(true);
-      const projectData = await response.json();
-      await page.goto(`${url}/projects/${projectData.id}`);
+      const projects = await Promise.all(
+        ['文档项目', '其他项目'].map(async (name) => {
+          const response = await page.request.post(`${url}/api/projects`, { data: { name } });
+          expect(response.ok()).toBe(true);
+          return response.json();
+        }),
+      );
+      const other = await page.request.post(`${url}/api/projects/${projects[1].id}/todos`, {
+        data: { title: '其他任务', originalDescription: '用于验证筛选' },
+      });
+      expect(other.ok()).toBe(true);
+
+      await page.goto(`${url}/projects/${projects[0].id}`);
       await page.getByRole('button', { name: '新建第一个 Todo' }).click();
       await page.getByLabel('导入 Markdown（可选）').setInputFiles({
         name: '导入需求.md',
@@ -127,6 +136,19 @@ test('导入 Markdown 草稿、下载单条及项目文档', async ({ page }) =>
       await expect(page.getByText('导入后的验收内容', { exact: true })).toBeVisible();
       await page.getByRole('tab', { name: '活动记录' }).click();
       await expect(page.getByRole('button', { name: '查看版本' })).toBeVisible();
+
+      await page.goto(`${url}/tasks`);
+      await page.getByRole('searchbox').fill('task-001');
+      await expect(page.getByRole('row')).toHaveCount(3);
+      await page.getByLabel('所属项目', { exact: true }).selectOption({ label: '文档项目' });
+      await page.getByLabel('需求状态', { exact: true }).selectOption('pending');
+      await page.getByLabel('执行状态', { exact: true }).selectOption('todo');
+      await expect(page.getByRole('row')).toHaveCount(2);
+      await page.getByRole('searchbox').fill('其他任务');
+      await expect(page.getByText('没有匹配的任务。')).toBeVisible();
+      await page.getByRole('button', { name: '清除筛选' }).click();
+      await expect(page.getByRole('row')).toHaveCount(3);
+      await page.getByRole('row').filter({ hasText: '导入需求' }).click();
 
       await page.getByRole('button', { name: '确认需求', exact: true }).first().click();
       await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();

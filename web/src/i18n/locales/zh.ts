@@ -138,6 +138,12 @@ export const zh = {
     createFailed: '创建失败',
   },
   tasks: {
+    search: '搜索标题或任务编号',
+    allProjects: '全部项目',
+    allRequirements: '全部需求状态',
+    allExecutions: '全部执行状态',
+    clearFilters: '清除筛选',
+    noMatches: '没有匹配的任务。',
     title: '全部任务',
     countAll: '全部 {{count}}',
     countPending: '待打磨 {{count}}',

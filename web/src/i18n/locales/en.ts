@@ -140,6 +140,12 @@ export const en: Messages = {
     createFailed: 'Create failed',
   },
   tasks: {
+    search: 'Search titles or task numbers',
+    allProjects: 'All projects',
+    allRequirements: 'All requirement statuses',
+    allExecutions: 'All execution statuses',
+    clearFilters: 'Clear filters',
+    noMatches: 'No tasks match your filters.',
     title: 'All tasks',
     countAll: 'All {{count}}',
     countPending: 'To refine {{count}}',
