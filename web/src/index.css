@@ -77,6 +77,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  :is(button, [role='button'], input:is([type='button'], [type='submit'], [type='reset'])):not(
+    :disabled,
+    [aria-disabled='true'],
+    [data-disabled]
+  ) {
+    cursor: pointer;
+  }
 }
 
 .markdown {
