@@ -1,124 +1,84 @@
 # AI Task Hub
 
-本地单机的「需求打磨 + 任务管理」工作台，面向独立开发者：把模糊想法经过 AI 多轮澄清，变成一份可交付给本地 Coding Agent 的 Markdown 需求文档。
+English · [简体中文](README.zh-CN.md)
 
-核心流程：**模糊想法 → AI 多轮澄清 → 用户手动确认 → Copy Markdown 交给 Coding Agent**。
+AI Task Hub is a local workspace for independent developers to refine requirements and manage tasks. Turn a rough idea into a Markdown specification through a conversation with AI, review and confirm it yourself, then hand it off to a coding agent.
 
-> 重要规则：AI 只判断需求是否充分，**永远不会自动确认**。确认权始终在用户手里；已确认的需求一旦被修改，会回到「需重新确认」状态。本产品不执行任何代码。
+- Organize work by project and search tasks by title or task number. Combine filters for project, requirement status, and execution status.
+- Import a Markdown file as a draft, refine it through chat, and compare or restore document versions.
+- Copy or download a task as Markdown, or export all confirmed requirements in a project.
 
-## 目录结构
+## Quick start
 
-```
-shared/   共享类型 / 枚举 / zod schema / 状态机 / Markdown 模板
-server/   Hono API + SQLite(Drizzle) + AI 流式客户端
-web/      React + Vite + Tailwind + shadcn/ui 前端
-```
-
-## 启动
-
-环境要求：Node.js >= 22、pnpm >= 10。
+Install Node.js 22 or later and pnpm 10. The repository pins the pnpm version in [package.json](package.json).
 
 ```bash
+git clone https://github.com/coderwei99/AI_task_hub.git
+cd AI_task_hub
 pnpm install
+pnpm build
+pnpm start
 ```
 
-### 开发模式
+Open [http://127.0.0.1:8787](http://127.0.0.1:8787). The server serves both the web app and the API and applies SQLite migrations automatically. Set `AI_TASK_HUB_PORT` to change the production port.
 
-```bash
-pnpm dev
-```
+For development, run `pnpm dev` after installing dependencies. The Vite frontend runs at [http://localhost:5173](http://localhost:5173), and the API runs at [http://127.0.0.1:8787](http://127.0.0.1:8787).
 
-- 前端：http://localhost:5173（Vite 热更新）
-- API：http://127.0.0.1:8787
+## Configure an AI provider
 
-### 生产模式（单进程托管）
+Open **Settings** to enable AI chat. Choose the OpenAI preset or enter the settings for another provider that supports streaming OpenAI-compatible Chat Completions.
 
-```bash
-pnpm build   # 构建 web 到 web/dist
-pnpm start   # server 同时托管 API 与前端静态资源
-```
+| Field    | Description                                        | Example                     |
+| -------- | -------------------------------------------------- | --------------------------- |
+| Base URL | API base URL. The app appends `/chat/completions`. | `https://api.openai.com/v1` |
+| API Key  | The key issued by your provider                    | `sk-...`                    |
+| Model    | The provider's model identifier                    | `gpt-4o-mini`               |
 
-访问 http://127.0.0.1:8787。生产模式下端口可通过 `AI_TASK_HUB_PORT` 修改。启动时自动执行数据库 migration，无需手动建表。
+Select **Test connection** to verify streaming, then save the configuration. Leave the key field blank to reuse a saved key with the same Base URL. Enter a key when switching to a different Base URL.
 
-## 配置
+The server stores the key in plaintext in the local SQLite database. The settings API reports whether a key is saved. AI requests use the key to authenticate with your configured provider and send project context, the current requirements document, and relevant chat messages. Keep the data directory private.
 
-### AI 服务（必需，否则无法澄清）
+## Requirements workflow
 
-启动后，在项目首页点击「去配置」或打开「设置」。使用 OpenAI 时，可选用页面内的预设并前往 OpenAI 平台创建 API Key。使用其他服务商时，填写服务商提供的三项配置（OpenAI 兼容接口）：
+A requirement can move from **Pending** to **Refining** to **AI ready**. Only you can confirm it. You can also confirm a nonempty draft before the AI considers it ready, once generation has stopped. Editing a confirmed document requires confirmation again. Continuing the conversation on a confirmed requirement moves it back to **Refining**.
 
-| 字段     | 说明                            | 示例                        |
-| -------- | ------------------------------- | --------------------------- |
-| Base URL | 兼容 `/chat/completions` 的地址 | `https://api.openai.com/v1` |
-| API Key  | 密钥                            | `sk-...`                    |
-| Model    | 模型名                          | `gpt-4o-mini`               |
+The full chat history stays in SQLite. Model requests include project context, the current document, the latest user turn, and recent history within the configured budget. Both normal and repair requests keep up to eight user turns by default, including the current turn. The input budget is estimated at about 24,000 tokens from UTF-8 byte counts. The output limit is 4,096 tokens. Required context can exceed the estimated input budget. See the defaults in [context.ts](server/src/ai/context.ts).
 
-填完点击「测试连接」验证模型能否返回流式文本，再点击「保存」。配置保存在本地 SQLite 中。已保存的 Key 可在 Base URL 相同的情况下留空沿用，更换地址时需重新输入。
+For standard seven-section documents, the model can return only the sections that changed. A turn can also leave the document unchanged. Keep important decisions in the document so they remain available after earlier chat messages fall outside the context window.
 
-> 安全说明：API Key 以明文存于本地数据库，设置接口仅向浏览器返回是否已保存 Key。使用 AI 时，服务端会用 Key 向你配置的服务商认证，并发送项目背景、当前需求文档和相关聊天内容。请勿把数据目录提交到 git 或分享给他人。
+## Data and backups
 
-### 数据目录（可选）
+Projects, tasks, conversations, activity, and settings are stored locally in `~/.ai-task-hub/data.db`. Set `AI_TASK_HUB_DATA_DIR` before starting the server to use another directory. SQLite uses write-ahead logging and may create `data.db-wal` and `data.db-shm` alongside the main file.
 
-默认数据目录为 `~/.ai-task-hub`。可用环境变量覆盖：
-
-```bash
-AI_TASK_HUB_DATA_DIR=/path/to/dir pnpm start
-```
-
-## AI 对话上下文
-
-完整聊天记录保存在本地数据库。发送给 AI 时，始终携带项目背景、当前需求文档和最新用户轮次，仅按预算携带最近的历史（默认最多 8 个用户轮次，包含当前轮次）。正常请求与格式补救请求均执行裁剪。
-
-默认输入预算为约 24,000 Token，使用 UTF-8 字节数估算，并非模型精确计数；输出上限另设为 4,096 Token。固定背景、文档或当前消息过大时会优先完整保留，因此预算不是硬性上下文限制。使用小上下文模型时可调整 `server/src/ai/context.ts` 中的默认值。
-
-当前未生成历史摘要，未写入需求文档的早期细节可能不再发送给 AI；重要决策请保留在需求文档中。
-
-## 数据与备份
-
-所有数据（项目 / Todo / 对话 / 活动记录 / 设置）都在一个 SQLite 文件里：
-
-```
-~/.ai-task-hub/data.db        # 主库
-~/.ai-task-hub/data.db-wal    # WAL 日志
-~/.ai-task-hub/data.db-shm    # WAL 共享内存
-```
-
-数据库运行在 WAL 模式。
-
-### 备份
-
-最稳妥的方式是**先停止服务**再复制整个数据目录：
-
-```bash
-cp -R ~/.ai-task-hub ~/backup/ai-task-hub-$(date +%Y%m%d)
-```
-
-不停机备份请使用 SQLite 在线备份（避免只拷主库而丢失 WAL 中未落盘的数据）：
+For an offline backup, stop the server and copy the entire data directory. For a backup while the server is running, use SQLite's online backup command.
 
 ```bash
 sqlite3 ~/.ai-task-hub/data.db ".backup '/path/to/backup.db'"
 ```
 
-### 恢复
+To restore, stop the server and replace the data directory with the offline copy, or restore the online backup as `data.db` in an empty data directory. Start the server to apply any pending migrations.
 
-停止服务后，把备份的 `data.db`（及 `-wal`/`-shm`，若存在）放回数据目录，再启动即可；启动时会自动补齐 migration。
+## Repository layout
 
-## 测试与检查
+| Directory | Contents                                                         |
+| --------- | ---------------------------------------------------------------- |
+| `shared/` | Shared types, Zod schemas, state machine, and Markdown templates |
+| `server/` | Hono API, SQLite with Drizzle, and streaming AI client           |
+| `web/`    | React, Vite, Tailwind CSS, and shadcn/ui                         |
+
+## Tests and checks
 
 ```bash
-pnpm -r test        # shared + server 单元/集成测试
-pnpm typecheck      # 全包类型检查
-pnpm build          # 以下测试使用生产构建
-pnpm test:startup   # 空库启动、静态资源与旧库迁移
+pnpm -r test
+pnpm typecheck
+pnpm build
+pnpm test:startup
 pnpm exec playwright install chromium
-pnpm test:e2e       # 使用模拟模型验证浏览器流程，无需 API Key
+pnpm test:e2e
 ```
 
-## 状态机（需求状态）
+Startup tests use the production build and check fresh databases and migrations. Browser tests use a mock AI provider. See the [contribution guide](CONTRIBUTING.md) for repository conventions.
 
-`待打磨 → 打磨中 → AI 已完成分析 → 已确认`；只要需求文档非空且 AI 未在生成，用户也可从待打磨或打磨中直接确认，不受 AI 充分性判断限制。已确认后编辑文档 → `需重新确认` → 再次确认 → `已确认`；已确认后继续对话 → 回到 `打磨中`。
+## License
 
-不变量：`已确认` 只能由用户确认动作到达，AI 的任何输出都不能直接产生 `已确认`（有单测覆盖）。
-
-## 许可证
-
-本项目采用 [MIT License](LICENSE)。
+[MIT](LICENSE)
