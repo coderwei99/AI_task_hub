@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import {
   createTodoSchema,
   parseWithLocale,
   PRIORITIES,
+  REQUIREMENT_DOC_MAX_LENGTH,
   type Priority,
   type Todo,
 } from '@ai-task-hub/shared';
@@ -42,6 +43,9 @@ export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Pro
   const [originalDescription, setOriginalDescription] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
   const [error, setError] = useState('');
+  const [markdown, setMarkdown] = useState<{ name: string; content: string } | null>(null);
+  const [readingFile, setReadingFile] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const createTodo = useCreateTodo();
 
@@ -50,14 +54,60 @@ export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Pro
       setTitle('');
       setOriginalDescription('');
       setPriority('medium');
+      setMarkdown(null);
+      setReadingFile(false);
       setError('');
     }
   }, [open]);
 
+  async function readMarkdown(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    setError('');
+    if (!/\.(md|markdown)$/i.test(file.name)) {
+      setError(t('todoForm.markdownInvalid'));
+      return;
+    }
+    if (file.size > REQUIREMENT_DOC_MAX_LENGTH * 4 + 3) {
+      setError(t('todoForm.markdownTooLong', { count: REQUIREMENT_DOC_MAX_LENGTH }));
+      return;
+    }
+
+    setReadingFile(true);
+    try {
+      const content = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer());
+      if (fileInput.current !== input) return;
+      if (!content.trim()) {
+        setError(t('todoForm.markdownEmpty'));
+        return;
+      }
+      if (content.length > REQUIREMENT_DOC_MAX_LENGTH) {
+        setError(t('todoForm.markdownTooLong', { count: REQUIREMENT_DOC_MAX_LENGTH }));
+        return;
+      }
+      const filenameTitle = file.name.replace(/\.(md|markdown)$/i, '').trim();
+      setTitle((current) => current || filenameTitle.slice(0, 200));
+      setMarkdown({ name: file.name, content });
+    } catch {
+      if (fileInput.current === input) setError(t('todoForm.markdownReadFailed'));
+    } finally {
+      if (fileInput.current === input) setReadingFile(false);
+    }
+  }
+
   async function handleSubmit() {
+    if (readingFile || createTodo.isPending) return;
     const parsed = parseWithLocale(
       createTodoSchema,
-      { title, originalDescription, priority },
+      {
+        title,
+        originalDescription: originalDescription.trim() || (markdown ? title : ''),
+        priority,
+        requirementDoc: markdown?.content,
+      },
       currentLocale(),
     );
     if (!parsed.success) {
@@ -76,7 +126,7 @@ export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Pro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t('todoForm.title')}</DialogTitle>
         </DialogHeader>
@@ -115,13 +165,39 @@ export function TodoFormDialog({ projectId, open, onOpenChange, onCreated }: Pro
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="todo-markdown">{t('todoForm.importMarkdown')}</Label>
+            <Input
+              ref={fileInput}
+              id="todo-markdown"
+              type="file"
+              accept=".md,.markdown"
+              disabled={readingFile || createTodo.isPending}
+              onChange={readMarkdown}
+            />
+            {markdown && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="min-w-0 flex-1 truncate" title={markdown.name}>
+                  {markdown.name}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={readingFile || createTodo.isPending}
+                  onClick={() => setMarkdown(null)}
+                >
+                  {t('todoForm.removeMarkdown')}
+                </Button>
+              </div>
+            )}
+          </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleSubmit} disabled={createTodo.isPending}>
+          <Button onClick={handleSubmit} disabled={readingFile || createTodo.isPending}>
             {createTodo.isPending ? t('common.creating') : t('common.create')}
           </Button>
         </DialogFooter>

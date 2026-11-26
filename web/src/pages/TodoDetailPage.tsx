@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Check, Copy, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Download, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import {
@@ -60,7 +60,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
+import { useMarkdownExport } from '@/lib/useMarkdownExport';
 import { useMediaQuery } from '@/lib/useMediaQuery';
 
 export default function TodoDetailPage() {
@@ -73,7 +73,7 @@ export default function TodoDetailPage() {
   const updateTodo = useUpdateTodo();
   const deleteTodo = useDeleteTodo();
   const confirmTodo = useConfirmTodo();
-  const { copy, isPending: copyPending } = useCopyMarkdown();
+  const { copy, download, isPending: exportPending } = useMarkdownExport();
   const isMobile = useMediaQuery('(max-width: 767px)');
 
   const [editingTitle, setEditingTitle] = useState(false);
@@ -165,13 +165,25 @@ export default function TodoDetailPage() {
             <span>/</span>
             <span className="font-mono">{formatTodoNumber(todo.number)}</span>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
-              disabled={copyPending}
+              disabled={exportPending}
               onClick={() => copy(`/todos/${todo.id}/export`)}
             >
               <Copy /> Copy
+            </Button>
+            <Button
+              variant="outline"
+              disabled={exportPending}
+              onClick={() =>
+                download(
+                  `/todos/${todo.id}/export`,
+                  `${formatTodoNumber(todo.number)} ${todo.title}`,
+                )
+              }
+            >
+              <Download /> {t('copy.download')}
             </Button>
             <Button
               disabled={!confirmable}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Copy, Pencil, Plus } from 'lucide-react';
+import { ArrowLeft, Copy, Download, Pencil, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EXECUTION_STATUSES, REQUIREMENT_STATUSES, type Todo } from '@ai-task-hub/shared';
 import { useProject, useTodos, useMoveTodo } from '@/api/hooks';
@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
+import { useMarkdownExport } from '@/lib/useMarkdownExport';
 
 type View = 'requirement' | 'execution';
 
@@ -27,7 +27,7 @@ export default function BoardPage() {
   const { data: project, isPending, error, refetch } = useProject(projectId);
   const { data: todos } = useTodos(projectId);
   const moveTodo = useMoveTodo(projectId);
-  const { copy, isPending: copyPending } = useCopyMarkdown();
+  const { copy, download, isPending: exportPending } = useMarkdownExport();
 
   const [view, setView] = useState<View>(() =>
     localStorage.getItem(VIEW_KEY) === 'execution' ? 'execution' : 'requirement',
@@ -125,14 +125,22 @@ export default function BoardPage() {
               })}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
-              disabled={confirmedCount === 0 || copyPending}
+              disabled={confirmedCount === 0 || exportPending}
               title={confirmedCount === 0 ? t('board.noConfirmed') : t('board.copyProjectHint')}
               onClick={() => copy(`/projects/${projectId}/export`)}
             >
               <Copy /> {t('board.copyProject')}
+            </Button>
+            <Button
+              variant="outline"
+              disabled={confirmedCount === 0 || exportPending}
+              title={confirmedCount === 0 ? t('board.noConfirmed') : undefined}
+              onClick={() => download(`/projects/${projectId}/export`, project.name)}
+            >
+              <Download /> {t('copy.download')}
             </Button>
             <Button onClick={() => setCreateOpen(true)}>
               <Plus /> {t('board.newTodo')}

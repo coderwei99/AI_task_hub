@@ -37,10 +37,13 @@ export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export const updateProjectSchema = z.object(projectFields).partial();
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 
+export const REQUIREMENT_DOC_MAX_LENGTH = 100000;
+
 export const createTodoSchema = z.object({
   title: z.string().trim().min(1, msg('titleRequired')).max(200),
   originalDescription: z.string().trim().min(1, msg('descriptionRequired')).max(20000),
   priority: z.enum(PRIORITIES).default('medium'),
+  requirementDoc: z.string().max(REQUIREMENT_DOC_MAX_LENGTH).optional(),
 });
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;
 
@@ -48,7 +51,7 @@ export const updateTodoSchema = z.object({
   title: z.string().trim().min(1).max(200).optional(),
   priority: z.enum(PRIORITIES).optional(),
   executionStatus: z.enum(EXECUTION_STATUSES).optional(),
-  requirementDoc: z.string().max(100000).optional(),
+  requirementDoc: z.string().max(REQUIREMENT_DOC_MAX_LENGTH).optional(),
 });
 export type UpdateTodoInput = z.infer<typeof updateTodoSchema>;
 

@@ -107,3 +107,41 @@ test('生成、确认、对比与导出需求，模型断流后继续编辑和�
     rmSync(dataDir, { recursive: true, force: true });
   }
 });
+
+test('导入 Markdown 草稿、下载单条及项目文档', async ({ page }) => {
+  const dataDir = mkdtempSync(join(tmpdir(), 'ath-markdown-'));
+  try {
+    await withServer(dataDir, async (url: string) => {
+      const response = await page.request.post(`${url}/api/projects`, { data: { name: '文档项目' } });
+      expect(response.ok()).toBe(true);
+      const projectData = await response.json();
+      await page.goto(`${url}/projects/${projectData.id}`);
+      await page.getByRole('button', { name: '新建第一个 Todo' }).click();
+      await page.getByLabel('导入 Markdown（可选）').setInputFiles({
+        name: '导入需求.md',
+        mimeType: 'text/markdown',
+        buffer: Buffer.from('## 验收标准\n\n- 导入后的验收内容'),
+      });
+      await expect(page.locator('#todo-title')).toHaveValue('导入需求');
+      await page.getByRole('dialog').getByRole('button', { name: '创建', exact: true }).click();
+      await expect(page.getByText('导入后的验收内容', { exact: true })).toBeVisible();
+      await page.getByRole('tab', { name: '活动记录' }).click();
+      await expect(page.getByRole('button', { name: '查看版本' })).toBeVisible();
+
+      await page.getByRole('button', { name: '确认需求', exact: true }).first().click();
+      await page.getByRole('dialog').getByRole('button', { name: '确认', exact: true }).click();
+      await expect(page.getByText('需求已确认，可 Copy 交给 Coding Agent')).toBeVisible();
+
+      const single = page.waitForEvent('download');
+      await page.getByRole('button', { name: '下载 Markdown' }).click();
+      expect((await single).suggestedFilename()).toBe('TASK-001 导入需求.md');
+
+      await page.getByRole('link', { name: '文档项目' }).click();
+      const project = page.waitForEvent('download');
+      await page.getByRole('button', { name: '下载 Markdown' }).click();
+      expect((await project).suggestedFilename()).toBe('文档项目.md');
+    });
+  } finally {
+    rmSync(dataDir, { recursive: true, force: true });
+  }
+});

@@ -65,6 +65,8 @@ export const en: Messages = {
     pink: 'Pink',
   },
   copy: {
+    download: 'Download Markdown',
+    downloadFailed: 'Download failed',
     done: 'Copied. Paste it straight into your coding agent.',
     failed: 'Copy failed',
   },
@@ -122,6 +124,12 @@ export const en: Messages = {
     moveFailed: 'Move failed, reverted',
   },
   todoForm: {
+    importMarkdown: 'Import Markdown (optional)',
+    removeMarkdown: 'Remove file',
+    markdownInvalid: 'Choose an .md or .markdown file.',
+    markdownTooLong: 'Markdown must be at most {{count}} characters.',
+    markdownEmpty: 'The Markdown file is empty.',
+    markdownReadFailed: 'Could not read the file. Use a UTF-8 Markdown file.',
     title: 'New todo',
     titleLabel: 'Title *',
     titlePlaceholder: 'e.g. Speed up message loading',

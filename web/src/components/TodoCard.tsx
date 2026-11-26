@@ -4,7 +4,7 @@ import { ExecutionBadge, PriorityBadge, RequirementBadge } from '@/components/ba
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { relativeTime } from '@/lib/format';
-import { useCopyMarkdown } from '@/lib/useCopyMarkdown';
+import { useMarkdownExport } from '@/lib/useMarkdownExport';
 
 interface Props {
   todo: Todo;
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function TodoCard({ todo, view, onClick }: Props) {
-  const { copy, isPending } = useCopyMarkdown();
+  const { copy, isPending } = useMarkdownExport();
   return (
     <Card
       className="cursor-pointer gap-2 p-3 transition-colors hover:bg-accent/50"

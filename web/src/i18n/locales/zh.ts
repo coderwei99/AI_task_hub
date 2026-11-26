@@ -63,6 +63,8 @@ export const zh = {
     pink: '粉',
   },
   copy: {
+    download: '下载 Markdown',
+    downloadFailed: '下载失败',
     done: '已复制，可直接粘贴给 Coding Agent',
     failed: '复制失败',
   },
@@ -120,6 +122,12 @@ export const zh = {
     moveFailed: '移动失败，已回滚',
   },
   todoForm: {
+    importMarkdown: '导入 Markdown（可选）',
+    removeMarkdown: '移除文件',
+    markdownInvalid: '请选择 .md 或 .markdown 文件。',
+    markdownTooLong: 'Markdown 内容不能超过 {{count}} 个字符。',
+    markdownEmpty: 'Markdown 文件为空。',
+    markdownReadFailed: '读取失败，请使用 UTF-8 编码的 Markdown 文件。',
     title: '新建 Todo',
     titleLabel: '标题 *',
     titlePlaceholder: '例如：优化消息加载速度',

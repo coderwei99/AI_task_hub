@@ -37,7 +37,7 @@ export function createTodo(projectId: string, input: CreateTodoInput): Todo {
       number,
       title: input.title,
       originalDescription: input.originalDescription,
-      requirementDoc: '',
+      requirementDoc: input.requirementDoc ?? '',
       requirementStatus: 'pending',
       executionStatus: 'todo',
       priority: input.priority,
@@ -47,6 +47,14 @@ export function createTodo(projectId: string, input: CreateTodoInput): Todo {
     };
     tx.insert(todos).values(todo).run();
     logActivity(todo.id, 'todo_created', {}, tx);
+    if (todo.requirementDoc) {
+      logActivity(
+        todo.id,
+        'doc_updated',
+        { source: 'user', prevDoc: '', document: todo.requirementDoc },
+        tx,
+      );
+    }
     return todo;
   });
 }
