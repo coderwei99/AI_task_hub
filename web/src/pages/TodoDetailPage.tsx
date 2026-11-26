@@ -333,24 +333,26 @@ export default function TodoDetailPage() {
       </AlertDialog>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
+        <DialogContent className="flex max-h-[85dvh] w-[calc(100%-2rem)] flex-col sm:max-w-4xl">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{t('todo.confirmDialogTitle')}</DialogTitle>
             <DialogDescription>
               {t('todo.confirmDialogDesc', { title: todo.title })}
             </DialogDescription>
           </DialogHeader>
           {todo.requirementStatus !== 'ai_ready' && todo.requirementStatus !== 'reconfirm' && (
-            <p className="text-sm text-amber-700 dark:text-amber-400">{t('todo.confirmWarning')}</p>
+            <p className="shrink-0 text-sm text-amber-700 dark:text-amber-400">
+              {t('todo.confirmWarning')}
+            </p>
           )}
-          <div className="max-h-60 overflow-y-auto rounded-md border bg-muted/30 p-3">
+          <div className="min-h-0 overflow-auto rounded-md border bg-muted/30 p-3 sm:p-4">
             {todo.requirementDoc ? (
               <Markdown content={todo.requirementDoc} className="text-sm" />
             ) : (
               <p className="text-sm text-muted-foreground">{t('todo.noDoc')}</p>
             )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
               {t('common.cancel')}
             </Button>
