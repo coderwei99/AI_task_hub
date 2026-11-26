@@ -79,9 +79,11 @@ describe('文档历史版本', () => {
     patchTodo(id, { requirementDoc: 'C' });
     const versions = documentVersions(id);
     expect(versions.map((v) => v.document)).toEqual(['A', 'B', 'C']);
+    expect(versions.map((v) => v.previousDocument)).toEqual(['', 'A', 'B']);
     confirmTodo(id);
     expect(restoreDocument(id, versions[0].id).requirementStatus).toBe('reconfirm');
     expect(documentVersions(id).map((v) => v.document)).toEqual(['A', 'B', 'C', 'A']);
+    expect(documentVersions(id).at(-1)?.previousDocument).toBe('C');
     restoreDocument(id, versions[2].id);
     expect(todoOf(id).requirementDoc).toBe('C');
     expect(todoOf(id).executionStatus).toBe('todo');

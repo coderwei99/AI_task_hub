@@ -193,7 +193,7 @@ export const zh = {
   doc: {
     currentDocument: '当前文档（恢复前）',
     targetDocument: '历史版本（恢复后）',
-    diff: '差异对比',
+    diff: '与上一版对比',
     versionView: '版本查看方式',
     diffDirection: '当前文档 → 历史版本（红色删除，绿色新增）',
     noChanges: '与当前文档内容相同，无需恢复。',

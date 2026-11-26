@@ -198,7 +198,7 @@ export const en: Messages = {
   doc: {
     currentDocument: 'Current document (before restore)',
     targetDocument: 'Historical version (after restore)',
-    diff: 'Diff',
+    diff: 'Compare with previous',
     versionView: 'Version view',
     diffDirection: 'Current → historical version (red: removed, green: added)',
     noChanges: 'Identical to the current document. No restore needed.',

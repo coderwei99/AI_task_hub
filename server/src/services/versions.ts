@@ -29,6 +29,7 @@ export function documentVersions(todoId: string) {
       id: change.id,
       number: index + 1,
       document,
+      previousDocument: payload.prevDoc as string,
       createdAt: change.createdAt,
       source: payload.source as string,
       restoredFrom: payload.restoredFrom as number | undefined,

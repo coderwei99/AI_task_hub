@@ -24,6 +24,7 @@ interface Version {
   id: string;
   number: number;
   document: string;
+  previousDocument: string;
   createdAt: number;
   source: string;
   restoredFrom?: number;
@@ -203,7 +204,10 @@ export function ActivityTimeline({
           </div>
           <div className="max-h-[55vh] min-w-0 overflow-auto">
             {view === 'diff' ? (
-              <DocumentDiff before={currentDocument ?? ''} after={selected?.document ?? ''} />
+              <DocumentDiff
+                before={selected?.previousDocument ?? ''}
+                after={selected?.document ?? ''}
+              />
             ) : selected?.document ? (
               <Markdown content={selected.document} />
             ) : (
