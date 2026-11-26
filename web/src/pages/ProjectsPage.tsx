@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { MoreHorizontal, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import type { ProjectWithStats } from '@ai-task-hub/shared';
-import { useDeleteProject, useProjects } from '@/api/hooks';
+import { useDeleteProject, useProjects, useSettings } from '@/api/hooks';
 import { PageError } from '@/components/PageError';
 import { ProjectFormDialog } from '@/components/ProjectFormDialog';
 import { ProjectIcon } from '@/components/ProjectIcon';
@@ -32,6 +32,7 @@ export default function ProjectsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: projects, isPending, error, refetch } = useProjects();
+  const { data: settings } = useSettings();
   const deleteProject = useDeleteProject();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<ProjectWithStats | null>(null);
@@ -64,6 +65,15 @@ export default function ProjectsPage() {
           <Plus /> {t('projects.create')}
         </Button>
       </div>
+
+      {settings && !(settings.baseUrl && settings.hasApiKey && settings.model) && (
+        <Card className="mb-6 flex flex-col items-start gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">{t('settings.firstRunHint')}</p>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/settings">{t('chat.goConfigure')}</Link>
+          </Button>
+        </Card>
+      )}
 
       {isPending ? (
         <p className="text-sm text-muted-foreground">{t('common.loading')}</p>

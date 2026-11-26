@@ -12,6 +12,7 @@ import {
   type TestConnectionResult,
 } from '@/api/hooks';
 import { PageError } from '@/components/PageError';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,7 +33,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (settings) {
       setBaseUrl(settings.baseUrl);
-      setApiKey(settings.apiKey);
       setModel(settings.model);
     }
   }, [settings]);
@@ -52,6 +52,7 @@ export default function SettingsPage() {
     if (!data) return;
     try {
       await updateSettings.mutateAsync(data);
+      setApiKey((current) => (current.trim() === data.apiKey ? '' : current));
       toast.success(t('settings.saved'));
     } catch (e) {
       setError(e instanceof Error ? e.message : t('common.saveFailed'));
@@ -88,6 +89,30 @@ export default function SettingsPage() {
           <PageError message={t('settings.loadFailed')} onRetry={() => refetch()} />
         ) : (
           <div className="mt-4 space-y-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setBaseUrl('https://api.openai.com/v1');
+                  setModel('gpt-4o-mini');
+                  setApiKey('');
+                  setTestResult(null);
+                  setError('');
+                }}
+              >
+                {t('settings.openAiPreset')}
+              </Button>
+              <a
+                className="text-sm text-primary underline underline-offset-4"
+                href="https://platform.openai.com/api-keys"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('settings.openAiKeyLink')}
+              </a>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="base-url">Base URL</Label>
               <Input
@@ -98,16 +123,29 @@ export default function SettingsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="api-key">API Key</Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Label htmlFor="api-key">API Key</Label>
+                {settings?.hasApiKey ? (
+                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">
+                    <CheckCircle2 aria-hidden="true" />
+                    {t('settings.keySaved')}
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary">{t('settings.keyNotSaved')}</Badge>
+                )}
+              </div>
               <Input
                 id="api-key"
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="sk-…"
+                aria-describedby="api-key-hint"
                 autoComplete="off"
               />
-              <p className="text-xs text-muted-foreground">{t('settings.apiKeyHint')}</p>
+              <p id="api-key-hint" className="text-xs text-muted-foreground">
+                {t(settings?.hasApiKey ? 'settings.savedKeyHint' : 'settings.apiKeyHint')}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="model">{t('settings.model')}</Label>

@@ -122,6 +122,12 @@ export interface AiSettings {
   model: string;
 }
 
+export interface AiSettingsSummary {
+  baseUrl: string;
+  model: string;
+  hasApiKey: boolean;
+}
+
 export interface StorageInfo {
   dataDir: string;
   dbPath: string;

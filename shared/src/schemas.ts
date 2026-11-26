@@ -59,7 +59,7 @@ export type ChatInput = z.infer<typeof chatInputSchema>;
 
 export const aiSettingsSchema = z.object({
   baseUrl: z.url(),
-  apiKey: z.string().min(1),
+  apiKey: z.string().trim().optional(),
   model: z.string().min(1),
 });
 export type AiSettingsInput = z.infer<typeof aiSettingsSchema>;

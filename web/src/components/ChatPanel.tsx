@@ -44,7 +44,7 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const configured = settings
-    ? Boolean(settings.baseUrl && settings.apiKey && settings.model)
+    ? Boolean(settings.baseUrl && settings.hasApiKey && settings.model)
     : true;
   const list = messages ?? [];
   const { body: displayText, docPhase } = splitChatStream(streamText);

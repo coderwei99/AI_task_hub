@@ -244,7 +244,15 @@ export const en: Messages = {
     aiDesc:
       'Compatible with the OpenAI Chat Completions API. Requirement content is sent to the AI service you configure, so use a provider you trust.',
     loadFailed: 'Failed to load settings',
-    apiKeyHint: 'Stored only in the local SQLite database, never uploaded to any third party.',
+    firstRunHint:
+      'Set up your model and test the connection before refining your first requirement.',
+    openAiPreset: 'Use OpenAI preset',
+    openAiKeyLink: 'Get an OpenAI API key',
+    apiKeyHint: 'Enter the API key from your provider.',
+    keySaved: 'Saved',
+    keyNotSaved: 'Not configured',
+    savedKeyHint:
+      'An API key is saved. Leave blank to reuse it. Enter the key again if you change the Base URL.',
     model: 'Model',
     saved: 'Settings saved',
     testFailed: 'Test failed',

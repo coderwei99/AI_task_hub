@@ -25,31 +25,19 @@ export async function testConnection(
 ): Promise<TestConnectionResult> {
   const start = Date.now();
   try {
-    const res = await fetch(`${cfg.baseUrl.replace(/\/+$/, '')}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${cfg.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: cfg.model,
-        messages: [{ role: 'user', content: 'ping' }],
-        max_tokens: 1,
-        stream: false,
-      }),
+    const result = await streamChatCompletion(cfg, [{ role: 'user', content: 'Reply with OK.' }], {
       signal: AbortSignal.timeout(15000),
     });
     const latencyMs = Date.now() - start;
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      return { ok: false, latencyMs, error: `HTTP ${res.status}: ${text.slice(0, 200)}` };
+    if (!result.text.trim()) {
+      return { ok: false, latencyMs, error: localizeError(null, locale, 'aiTestEmpty') };
     }
     return { ok: true, latencyMs };
   } catch (e) {
     return {
       ok: false,
       latencyMs: Date.now() - start,
-      error: localizeError(e, locale, 'connectionFailed'),
+      error: localizeError(e, locale, 'connectionFailed').replaceAll(cfg.apiKey, '[redacted]'),
     };
   }
 }

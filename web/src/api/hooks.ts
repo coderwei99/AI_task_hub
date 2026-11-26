@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import i18n from '@/i18n';
 import type {
   Activity,
-  AiSettings,
+  AiSettingsInput,
+  AiSettingsSummary,
   CreateProjectInput,
   CreateTodoInput,
   ExecutionStatus,
@@ -193,7 +194,7 @@ export function useTasks() {
 export function useSettings() {
   return useQuery({
     queryKey: queryKeys.settings,
-    queryFn: () => api.get<AiSettings>('/settings'),
+    queryFn: () => api.get<AiSettingsSummary>('/settings'),
   });
 }
 
@@ -208,7 +209,7 @@ export function useStorageInfo() {
 export function useUpdateSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: AiSettings) => api.put<AiSettings>('/settings', input),
+    mutationFn: (input: AiSettingsInput) => api.put<AiSettingsSummary>('/settings', input),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.settings }),
   });
 }
@@ -221,6 +222,6 @@ export interface TestConnectionResult {
 
 export function useTestConnection() {
   return useMutation({
-    mutationFn: (input: AiSettings) => api.post<TestConnectionResult>('/settings/test', input),
+    mutationFn: (input: AiSettingsInput) => api.post<TestConnectionResult>('/settings/test', input),
   });
 }
