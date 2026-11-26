@@ -1,13 +1,14 @@
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { AiSettings, Message } from '@ai-task-hub/shared';
+import { SECTION_TITLES, type AiSettings, type Message } from '@ai-task-hub/shared';
 import {
   buildRepairMessages,
   parseAssistantOutput,
   parseRepairJson,
   resolveAssistantOutput,
 } from './parser';
+import { DOCUMENT_UNCHANGED, SECTION_UPDATES } from './document-update';
 import { DOC_DELIMITER, SUFFICIENT_NO, SUFFICIENT_YES } from './prompt';
 
 const DOC = '# 需求背景\n这是完整文档\n## 需求目标\n暂无';
@@ -18,6 +19,50 @@ function msg(role: 'user' | 'assistant', content: string): Message {
 }
 
 describe('parseAssistantOutput', () => {
+  const base = SECTION_TITLES.map((title) => `## ${title}\n\n原有${title}`).join('\n\n');
+  const reply = (payload: string) => `正文\n${DOC_DELIMITER}\n${payload}\n${SUFFICIENT_YES}`;
+  const patch = (updates: unknown) => reply(`${SECTION_UPDATES}\n${JSON.stringify(updates)}`);
+
+  it('文档未变时保留已有文档，空文档不能标为充分', () => {
+    expect(parseAssistantOutput(reply(DOCUMENT_UNCHANGED), 'stop', base)).toEqual({
+      status: 'ok',
+      chatBody: '正文',
+      document: null,
+      sufficient: true,
+    });
+    expect(parseAssistantOutput(reply(DOCUMENT_UNCHANGED), 'stop')).toMatchObject({
+      status: 'ok',
+      document: null,
+      sufficient: false,
+    });
+  });
+
+  it('只替换指定节，并保留其他节的原始文本', () => {
+    const response = patch([{ title: '验收标准', body: '- [ ] 新标准' }]);
+    expect(parseAssistantOutput(response, 'stop', base)).toMatchObject({
+      status: 'ok',
+      document: base.replace('原有验收标准', '- [ ] 新标准'),
+      sufficient: true,
+    });
+    expect(parseAssistantOutput(response, 'length', base).status).toBe('invalid_update');
+    expect(parseAssistantOutput(response, 'stop', '## 自定义标题\n内容').status).toBe(
+      'invalid_update',
+    );
+  });
+
+  it.each(
+    [
+      [{ title: '其他', body: '内容' }],
+      [{ title: '验收标准', body: '## 技术约束\n内容' }],
+      [
+        { title: '验收标准', body: '甲' },
+        { title: '验收标准', body: '乙' },
+      ],
+    ].map((updates) => [updates]),
+  )('拒绝无效的章节更新 %#', (updates) => {
+    expect(parseAssistantOutput(patch(updates), 'stop', base).status).toBe('invalid_update');
+  });
+
   it('正常三段（YES）拆分正文/文档/充分性', () => {
     const r = parseAssistantOutput(NORMAL, 'stop');
     expect(r.status).toBe('ok');

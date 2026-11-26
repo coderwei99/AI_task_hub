@@ -23,8 +23,13 @@ test('生成、确认、对比与导出需求，模型断流后继续编辑和�
       });
       return;
     }
-    const document = call === 1 ? original : updated;
-    const content = `已整理。\n===REQUIREMENT_DOC===\n## 验收标准\n\n- ${document}\n===SUFFICIENT: YES===`;
+    const document =
+      call === 1
+        ? ['需求背景', '需求目标', '功能范围', '技术约束', '验收标准', '排除范围', '尚未解决的问题']
+            .map((title) => `## ${title}\n\n${title === '验收标准' ? `- ${original}` : '暂无'}`)
+            .join('\n\n')
+        : `===SECTION_UPDATES===\n${JSON.stringify([{ title: '验收标准', body: `- ${updated}` }])}`;
+    const content = `已整理。\n===REQUIREMENT_DOC===\n${document}\n===SUFFICIENT: YES===`;
     response.end(
       `data: ${JSON.stringify({ choices: [{ delta: { content }, finish_reason: 'stop' }] })}\n\ndata: [DONE]\n\n`,
     );

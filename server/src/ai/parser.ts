@@ -1,15 +1,43 @@
-import type { AiSettings, Message } from '@ai-task-hub/shared';
+import { REQUIREMENT_DOC_MAX_LENGTH, type AiSettings, type Message } from '@ai-task-hub/shared';
+import { DOCUMENT_UNCHANGED, SECTION_UPDATES, applySectionUpdates } from './document-update';
 import { jsonChatCompletion } from './client';
 import { selectHistory, type ContextOptions } from './context';
 import { DOC_DELIMITER, SUFFICIENT_NO, SUFFICIENT_YES, type ChatMessage } from './prompt';
 
 export type ParseResult =
-  | { status: 'ok'; chatBody: string; document: string; sufficient: boolean }
+  | { status: 'ok'; chatBody: string; document: string | null; sufficient: boolean }
+  | { status: 'invalid_update'; chatBody: string }
   | { status: 'needs_repair'; chatBody: string; reason: 'missing_delimiter' | 'truncated' };
 
-export function parseAssistantOutput(text: string, finishReason: string | null): ParseResult {
+export function parseAssistantOutput(
+  text: string,
+  finishReason: string | null,
+  baseDocument = '',
+): ParseResult {
   const docIdx = text.indexOf(DOC_DELIMITER);
   const chatBody = (docIdx >= 0 ? text.slice(0, docIdx) : text).trim();
+
+  const afterDoc = docIdx >= 0 ? text.slice(docIdx + DOC_DELIMITER.length).trimStart() : '';
+  const isUpdate = afterDoc.startsWith(SECTION_UPDATES) || afterDoc.startsWith(DOCUMENT_UNCHANGED);
+  if (isUpdate) {
+    const envelope = afterDoc.trimEnd().match(/^(.*)\r?\n(===SUFFICIENT: (YES|NO)===)$/s);
+    if (!envelope || finishReason === 'length') return { status: 'invalid_update', chatBody };
+    const payload = envelope[1].trimEnd();
+    const sufficient = envelope[3] === 'YES';
+    if (payload === DOCUMENT_UNCHANGED) {
+      return {
+        status: 'ok',
+        chatBody,
+        document: null,
+        sufficient: sufficient && !!baseDocument.trim(),
+      };
+    }
+    const patch = payload.match(/^===SECTION_UPDATES===[ \t]*\r?\n([\s\S]+)$/)?.[1];
+    const document = patch ? applySectionUpdates(baseDocument, patch) : null;
+    return document === null
+      ? { status: 'invalid_update', chatBody }
+      : { status: 'ok', chatBody, document, sufficient };
+  }
 
   if (finishReason === 'length') {
     return { status: 'needs_repair', chatBody, reason: 'truncated' };
@@ -18,7 +46,6 @@ export function parseAssistantOutput(text: string, finishReason: string | null):
     return { status: 'needs_repair', chatBody, reason: 'missing_delimiter' };
   }
 
-  const afterDoc = text.slice(docIdx + DOC_DELIMITER.length);
   const yesIdx = afterDoc.indexOf(SUFFICIENT_YES);
   const noIdx = afterDoc.indexOf(SUFFICIENT_NO);
   let sufficient: boolean;
@@ -34,7 +61,7 @@ export function parseAssistantOutput(text: string, finishReason: string | null):
   }
 
   const document = afterDoc.slice(0, docEnd).trim();
-  if (document.length === 0) {
+  if (document.length === 0 || document.length > REQUIREMENT_DOC_MAX_LENGTH) {
     return { status: 'needs_repair', chatBody, reason: 'missing_delimiter' };
   }
   return { status: 'ok', chatBody, document, sufficient };
@@ -80,7 +107,12 @@ export function parseRepairJson(content: string): RepairParseResult {
   const raw = fence ? fence[1].trim() : trimmed;
   try {
     const obj = JSON.parse(raw) as { document?: unknown; sufficient?: unknown };
-    if (typeof obj.document !== 'string' || obj.document.trim().length === 0) return { ok: false };
+    if (
+      typeof obj.document !== 'string' ||
+      obj.document.trim().length === 0 ||
+      obj.document.length > REQUIREMENT_DOC_MAX_LENGTH
+    )
+      return { ok: false };
     if (typeof obj.sufficient !== 'boolean') return { ok: false };
     return { ok: true, document: obj.document, sufficient: obj.sufficient };
   } catch {
@@ -101,9 +133,9 @@ export async function resolveAssistantOutput(
   history: Message[],
   text: string,
   finishReason: string | null,
-  opts: { signal?: AbortSignal; context?: string } = {},
+  opts: { signal?: AbortSignal; context?: string; baseDocument?: string } = {},
 ): Promise<ResolvedOutput> {
-  const parsed = parseAssistantOutput(text, finishReason);
+  const parsed = parseAssistantOutput(text, finishReason, opts.baseDocument);
   if (parsed.status === 'ok') {
     return {
       chatBody: parsed.chatBody,
@@ -111,6 +143,16 @@ export async function resolveAssistantOutput(
       sufficient: parsed.sufficient,
       docRecovered: false,
       parseWarning: false,
+    };
+  }
+
+  if (parsed.status === 'invalid_update') {
+    return {
+      chatBody: parsed.chatBody,
+      document: null,
+      sufficient: null,
+      docRecovered: false,
+      parseWarning: true,
     };
   }
 

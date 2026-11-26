@@ -77,6 +77,7 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
   const resolved = await resolveAssistantOutput(cfg, history, text, finishReason, {
     signal,
     context: buildSystemPrompt(project, todo),
+    baseDocument: todo.requirementDoc,
   });
 
   if (signal.aborted) throw new LocalizedError('chatAborted');
@@ -93,22 +94,25 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
 
     const current = tx.select().from(todos).where(eq(todos.id, todoId)).get()!;
     const updates: Partial<Todo> = { updatedAt: Date.now() };
+    const stale = current.requirementDoc !== todo.requirementDoc;
+    const document = stale ? null : resolved.document;
+    const sufficient = stale ? null : resolved.sufficient;
     let docUpdated = false;
 
-    if (resolved.document !== null && resolved.document !== current.requirementDoc) {
-      updates.requirementDoc = resolved.document;
+    if (document !== null && document !== current.requirementDoc) {
+      updates.requirementDoc = document;
       docUpdated = true;
       logActivity(
         todoId,
         'doc_updated',
-        { source: 'ai', prevDoc: current.requirementDoc, document: resolved.document },
+        { source: 'ai', prevDoc: current.requirementDoc, document },
         tx,
       );
     }
 
     let requirementStatus = current.requirementStatus;
-    if (resolved.sufficient !== null) {
-      const event = resolved.sufficient ? 'ai_sufficient' : 'ai_insufficient';
+    if (sufficient !== null) {
+      const event = sufficient ? 'ai_sufficient' : 'ai_insufficient';
       const nextStatus = nextRequirementStatus(current.requirementStatus, event);
       if (nextStatus !== current.requirementStatus) {
         updates.requirementStatus = nextStatus;
@@ -126,11 +130,11 @@ export async function runChatTurn(opts: ChatTurnOptions): Promise<ChatDoneEvent>
 
     return {
       assistantMessageId: assistantMessage.id,
-      sufficient: resolved.sufficient,
+      sufficient,
       requirementStatus,
       docUpdated,
-      docRecovered: resolved.docRecovered,
-      parseWarning: resolved.parseWarning,
+      docRecovered: !stale && resolved.docRecovered,
+      parseWarning: stale || resolved.parseWarning,
     };
   });
 }
