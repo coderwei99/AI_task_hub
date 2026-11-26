@@ -36,6 +36,7 @@ const zhErrors = {
   descriptionRequired: '原始描述不能为空',
   messageRequired: '消息不能为空',
   aiTestEmpty: '模型未返回有效的流式文本，请检查模型是否支持流式对话。',
+  chatInterrupted: 'AI 对话连接中断，请重试。',
   aiKeyRequired: '请填写 API Key。更换 Base URL 时需要重新输入。',
   aiNotConfigured: '请先在设置页配置 AI 服务（Base URL / API Key / 模型）',
   chatInProgress: '该 Todo 已有进行中的对话，请等待完成或停止后重试',
@@ -67,6 +68,7 @@ const enErrors: Record<ErrorKey, string> = {
   descriptionRequired: 'Original description is required',
   messageRequired: 'Message cannot be empty',
   aiTestEmpty: 'The model returned no streamed text. Check that it supports streaming chat.',
+  chatInterrupted: 'The AI chat connection was interrupted. Try again.',
   aiKeyRequired: 'Enter an API key. Changing the Base URL requires entering the key again.',
   aiNotConfigured: 'Configure the AI service in Settings first (Base URL / API Key / model)',
   chatInProgress:

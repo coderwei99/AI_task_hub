@@ -35,6 +35,7 @@ export async function streamChat(
   let buffer = '';
   let eventType = '';
   let dataLines: string[] = [];
+  let completed = false;
 
   const dispatch = () => {
     if (dataLines.length === 0) {
@@ -47,8 +48,15 @@ export async function streamChat(
     eventType = '';
     try {
       if (type === 'delta') h.onDelta((JSON.parse(data) as { text: string }).text);
-      else if (type === 'done') h.onDone(JSON.parse(data) as ChatDoneEvent);
-      else if (type === 'error') h.onError((JSON.parse(data) as { message: string }).message);
+      else if (type === 'done') {
+        const result = JSON.parse(data) as ChatDoneEvent;
+        completed = true;
+        h.onDone(result);
+      } else if (type === 'error') {
+        const { message } = JSON.parse(data) as { message: string };
+        completed = true;
+        h.onError(message);
+      }
     } catch {
       // 忽略无法解析的事件
     }
@@ -71,4 +79,5 @@ export async function streamChat(
     }
   }
   dispatch();
+  if (!completed) throw new Error(formatMessage(currentLocale(), 'chatInterrupted'));
 }

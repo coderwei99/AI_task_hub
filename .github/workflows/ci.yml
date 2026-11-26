@@ -28,3 +28,13 @@ jobs:
       - run: pnpm -r test
       - run: pnpm build
       - run: pnpm test:startup
+      - if: runner.os == 'Linux'
+        run: pnpm exec playwright install --with-deps chromium
+      - if: runner.os == 'Linux'
+        run: pnpm test:e2e
+      - if: failure() && runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-results
+          path: test-results/
+          if-no-files-found: ignore

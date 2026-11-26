@@ -109,6 +109,8 @@ pnpm -r test        # shared + server 单元/集成测试
 pnpm typecheck      # 全包类型检查
 pnpm build          # 以下测试使用生产构建
 pnpm test:startup   # 空库启动、静态资源与旧库迁移
+pnpm exec playwright install chromium
+pnpm test:e2e       # 使用模拟模型验证浏览器流程，无需 API Key
 ```
 
 ## 状态机（需求状态）

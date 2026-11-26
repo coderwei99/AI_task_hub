@@ -93,6 +93,7 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
           else if (ev.docRecovered) toast.info(t('chat.docRecovered'));
         },
         onError: (message) => {
+          setInput(content);
           setStreaming(false);
           setStreamText('');
           setPendingUser(null);
@@ -102,6 +103,7 @@ export function ChatPanel({ todo, onConfirm, onGeneratingChange }: ChatPanelProp
         },
       });
     } catch (e) {
+      if (!controller.signal.aborted) setInput(content);
       setStreaming(false);
       setStreamText('');
       setPendingUser(null);

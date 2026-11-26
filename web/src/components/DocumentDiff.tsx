@@ -48,7 +48,7 @@ export function DocumentDiff({ before, after }: { before: string; after: string 
             <thead className="bg-muted/40">
               <tr>
                 <th colSpan={2} className="border-r border-b px-3 py-2 text-left font-medium">
-                  {t('doc.currentDocument')}
+                  {t('doc.previousDocument')}
                 </th>
                 <th colSpan={2} className="border-b px-3 py-2 text-left font-medium">
                   {t('doc.targetDocument')}
