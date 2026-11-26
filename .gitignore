@@ -9,3 +9,6 @@ dist/
 .env.*
 /playwright-report/
 /test-results/
+
+/task_plan.md
+/product_design.md
