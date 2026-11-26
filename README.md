@@ -38,7 +38,7 @@ pnpm build   # 构建 web 到 web/dist
 pnpm start   # server 同时托管 API 与前端静态资源
 ```
 
-访问 http://127.0.0.1:8787。启动时自动执行数据库 migration，无需手动建表。
+访问 http://127.0.0.1:8787。生产模式下端口可通过 `AI_TASK_HUB_PORT` 修改。启动时自动执行数据库 migration，无需手动建表。
 
 ## 配置
 
@@ -107,6 +107,8 @@ sqlite3 ~/.ai-task-hub/data.db ".backup '/path/to/backup.db'"
 ```bash
 pnpm -r test        # shared + server 单元/集成测试
 pnpm typecheck      # 全包类型检查
+pnpm build          # 以下测试使用生产构建
+pnpm test:startup   # 空库启动、静态资源与旧库迁移
 ```
 
 ## 状态机（需求状态）

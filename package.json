@@ -9,6 +9,7 @@
   },
   "scripts": {
     "prepare": "husky",
+    "test:startup": "node --test scripts/startup.test.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings 0",

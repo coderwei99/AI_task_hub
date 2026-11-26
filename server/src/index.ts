@@ -51,7 +51,7 @@ app.all('/api/*', (c) =>
   ),
 );
 
-if (process.env.NODE_ENV === 'production') {
+if (process.argv.includes('--production') || process.env.NODE_ENV === 'production') {
   const webDist = fileURLToPath(new URL('../../web/dist', import.meta.url));
   app.use('/*', serveStatic({ root: webDist }));
   app.get('*', (c) => c.html(readFileSync(join(webDist, 'index.html'), 'utf-8')));
@@ -59,6 +59,9 @@ if (process.env.NODE_ENV === 'production') {
   app.get('*', (c) => c.text('AI Task Hub API 已启动。开发模式请访问 http://localhost:5173'));
 }
 
-serve({ fetch: app.fetch, port: 8787, hostname: '127.0.0.1' }, (info) => {
-  console.log(`AI Task Hub API listening on http://127.0.0.1:${info.port} (db: ${dbPath})`);
-});
+serve(
+  { fetch: app.fetch, port: Number(process.env.AI_TASK_HUB_PORT ?? 8787), hostname: '127.0.0.1' },
+  (info) => {
+    console.log(`AI Task Hub API listening on http://127.0.0.1:${info.port} (db: ${dbPath})`);
+  },
+);

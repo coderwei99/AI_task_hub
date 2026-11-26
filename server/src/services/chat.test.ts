@@ -1,7 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const TEST_DATA_DIR = vi.hoisted(() => {
-  const dir = `/tmp/ath-chat-${process.pid}-${Date.now()}`;
+const TEST_DATA_DIR = await vi.hoisted(async () => {
+  const { mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const dir = mkdtempSync(join(tmpdir(), 'ath-chat-'));
   process.env.AI_TASK_HUB_DATA_DIR = dir;
   return dir;
 });
@@ -95,6 +98,7 @@ beforeAll(async () => {
 afterAll(async () => {
   server.closeAllConnections();
   await new Promise<void>((r) => server.close(() => r()));
+  db.$client.close();
   rmSync(TEST_DATA_DIR, { recursive: true, force: true });
 });
 

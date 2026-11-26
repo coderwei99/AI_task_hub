@@ -14,7 +14,9 @@ beforeAll(async () => {
 
 afterEach(() => vi.unstubAllGlobals());
 
-afterAll(() => {
+afterAll(async () => {
+  const { db } = await import('../db');
+  db.$client.close();
   vi.unstubAllEnvs();
   rmSync(dataDir, { recursive: true, force: true });
 });
